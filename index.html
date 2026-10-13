@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>さわって覚える ポイ活ナビ</title>
+<style>
+  :root {
+    --bg: #0f1b3d; --bg2: #1d3272; --ink: #14213d; --accent: #ff8a00;
+    --warn: #e5263a; --ok: #17a673; --line: #d9deea;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(170deg, var(--bg), var(--bg2)) fixed; color: #fff;
+    font-family: "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+    overscroll-behavior: none; user-select: none; -webkit-user-select: none;
+  }
+  button { font: inherit; color: inherit; border: 0; cursor: pointer; }
+  .view { display: none; min-height: 100dvh; }
+  .view.on { display: flex; flex-direction: column; }
+
+  /* ---- ステージ一覧 ---- */
+  #home { padding: 48px 20px 32px; gap: 18px; max-width: 520px; margin: 0 auto; }
+  #home h1 { font-size: 30px; line-height: 1.35; }
+  #home p { opacity: .85; line-height: 1.6; }
+  .stage { background: #fff; color: var(--ink); border-radius: 18px; padding: 18px 20px; text-align: left; display: block; width: 100%; }
+  .stage b { display: block; font-size: 20px; }
+  .stage span { display: block; font-size: 14px; color: #55607a; margin-top: 4px; }
+  .stage i { display: block; font-style: normal; margin-top: 10px; font-size: 20px; color: var(--accent); letter-spacing: 3px; }
+  .stage i.none { color: #b3bbcc; font-size: 14px; letter-spacing: 0; }
+
+  /* ---- プレイ画面 ---- */
+  #play { align-items: center; height: 100dvh; }
+  .bar { width: 100%; max-width: 520px; height: 48px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 12px; }
+  .bar button { background: rgba(255, 255, 255, .15); width: 36px; height: 36px; border-radius: 50%; font-size: 18px; }
+  .track { flex: 1; height: 10px; background: rgba(255, 255, 255, .2); border-radius: 99px; overflow: hidden; }
+  .track i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .3s; }
+  .miss { font-size: 14px; white-space: nowrap; }
+  /* スクショの枠。高さに合わせて、比率 590:1280 を保つ */
+  #shot {
+    position: relative; flex: none; height: calc(100dvh - 48px); aspect-ratio: 590 / 1280; max-width: 100vw;
+    overflow: hidden; touch-action: none; background: #000;
+  }
+  #shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; -webkit-user-drag: none; }
+  #shot.dim img { filter: brightness(.45); }
+  #shot.quiz img { filter: brightness(.75); }
+  #shot.shake { animation: shake .3s; }
+  @keyframes shake { 25% { transform: translateX(-8px) } 50% { transform: translateX(8px) } 75% { transform: translateX(-5px) } }
+  #shot.up img { transition: transform .45s ease-in, opacity .45s; transform: translateY(-35%); opacity: 0; }
+
+  /* 正解の場所(ヒントとして出す枠) */
+  #target { position: absolute; border: 4px solid var(--accent); border-radius: 10px; display: none; pointer-events: none; }
+  #target.hint { display: block; animation: pulse 1s ease-in-out infinite; }
+  #target.hit { display: block; border-color: var(--ok); background: rgba(23, 166, 115, .25); }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 10px rgba(255, 138, 0, .35) } }
+  /* 上にスワイプの案内 */
+  #swipe { position: absolute; left: 50%; top: 62%; font-size: 54px; margin-left: -27px; display: none; pointer-events: none; animation: swipe 1.3s ease-in-out infinite; }
+  @keyframes swipe { 0% { transform: translateY(40px); opacity: 0 } 30% { opacity: 1 } 100% { transform: translateY(-110px); opacity: 0 } }
+  /* 間違えたときのひとこと */
+  #toast {
+    position: absolute; transform: translate(-50%, -130%); background: var(--warn); color: #fff; font-weight: 700; font-size: 15px;
+    padding: 8px 14px; border-radius: 12px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .2s; z-index: 5;
+  }
+  #toast.on { opacity: 1; }
+
+  /* 指示のカード */
+  #card {
+    position: absolute; left: 10px; right: 10px; background: #fff; color: var(--ink); border-radius: 16px; padding: 14px 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .45); z-index: 4;
+  }
+  #card.top { top: 10px; } #card.bottom { bottom: 10px; } #card.mid { top: 50%; transform: translateY(-50%); }
+  #card small { display: block; color: var(--accent); font-weight: 900; font-size: 12px; margin-bottom: 4px; }
+  #card b { display: block; font-size: 18px; line-height: 1.45; }
+  #card p { font-size: 14px; line-height: 1.6; color: #55607a; margin-top: 6px; }
+  #card .btns { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+  #card .btns button { background: var(--ink); color: #fff; font-weight: 700; font-size: 16px; padding: 14px; border-radius: 12px; }
+  #card .btns button.ng { background: #b3bbcc; }
+
+  /* 重要ポイントの表示 */
+  #modal { position: fixed; inset: 0; background: rgba(8, 14, 34, .75); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 10; }
+  #modal.on { display: flex; }
+  #modal div { background: #fff; color: var(--ink); border-radius: 20px; padding: 24px 20px; max-width: 420px; width: 100%; text-align: center; animation: pop .3s cubic-bezier(.2, 1.4, .4, 1); }
+  @keyframes pop { from { transform: scale(.7); opacity: 0 } }
+  #modal em { display: block; font-style: normal; font-weight: 900; color: var(--warn); font-size: 18px; margin-bottom: 10px; }
+  #modal p { font-size: 17px; line-height: 1.7; font-weight: 700; text-align: left; }
+  #modal button { margin-top: 18px; background: var(--warn); color: #fff; font-weight: 900; font-size: 17px; padding: 14px; border-radius: 12px; width: 100%; }
+
+  /* ---- クリア画面 ---- */
+  #clear { padding: 56px 20px 32px; gap: 16px; max-width: 520px; margin: 0 auto; text-align: center; }
+  #clear h2 { font-size: 30px; }
+  #clear .stars { font-size: 52px; letter-spacing: 8px; color: var(--accent); }
+  #clear ul { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 10px; }
+  #clear li { background: #fff; color: var(--ink); border-left: 8px solid var(--warn); border-radius: 12px; padding: 12px 14px; font-size: 15px; line-height: 1.6; font-weight: 700; }
+  #clear h3 { text-align: left; font-size: 16px; margin-top: 8px; }
+  .wide { background: var(--accent); color: #fff; font-weight: 900; font-size: 17px; padding: 16px; border-radius: 14px; width: 100%; }
+  .wide.sub { background: rgba(255, 255, 255, .15); }
+</style>
+</head>
+<body>
+
+<section id="home" class="view on">
+  <h1>さわって覚える<br>ポイ活ナビ</h1>
+  <p>実際の画面をタップしながら、申し込みの手順と注意点を練習できます。本物の申し込みは行われません。</p>
+  <div id="stages" style="display:flex; flex-direction:column; gap:14px"></div>
+</section>
+
+<section id="play" class="view">
+  <div class="bar">
+    <button id="quit" aria-label="やめる">✕</button>
+    <div class="track"><i id="prog"></i></div>
+    <div class="miss">ミス <span id="missN">0</span></div>
+  </div>
+  <div id="shot">
+    <img id="img" alt="">
+    <div id="target"></div>
+    <div id="swipe">👆</div>
+    <div id="toast"></div>
+    <div id="card"></div>
+  </div>
+</section>
+
+<section id="clear" class="view">
+  <h2>ステージクリア！</h2>
+  <div class="stars" id="stars"></div>
+  <p id="result"></p>
+  <h3 id="reviewTitle">⚠️ 重要ポイントのおさらい</h3>
+  <ul id="review"></ul>
+  <button class="wide" id="next">次のステージへ</button>
+  <button class="wide sub" id="again">もう一度</button>
+  <button class="wide sub" id="back">ステージ一覧</button>
+</section>
+
+<div id="modal"><div><em>⚠️ 重要ポイント</em><p id="modalText"></p><button id="modalOk">わかった</button></div></div>
+
+<script src="stages.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  const shot = $('shot'), img = $('img'), target = $('target'), card = $('card'), toast = $('toast');
+  const src = name => `img/${name}.jpg`;
+  const seqSrc = (s, k) => `img/seq/${s.seq[0]}-${String(k + 1).padStart(2, '0')}.jpg`;
+  let stage, si, misses, stepMisses, busy, scrollP;
+
+  // 成績の保存(使えない環境でも動くようにする)
+  const best = id => { try { return Number(localStorage.getItem('stars-' + id)) || 0; } catch { return 0; } };
+  const saveBest = (id, n) => { try { if (n > best(id)) localStorage.setItem('stars-' + id, n); } catch {} };
+  const starText = n => '★'.repeat(n) + '☆'.repeat(3 - n);
+
+  function show(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+    window.scrollTo(0, 0);
+  }
+
+  function home() {
+    $('stages').innerHTML = STAGES.map((s, i) => {
+      const b = best(s.id);
+      return `<button class="stage" data-i="${i}"><b>${s.title}</b><span>${s.lead}</span>` +
+        (b ? `<i>${starText(b)}</i>` : `<i class="none">まだクリアしていません</i>`) + `</button>`;
+    }).join('');
+    show('home');
+  }
+
+  function start(i) {
+    stage = STAGES[i]; si = 0; misses = 0;
+    stage.steps.forEach(s => {
+      new Image().src = src(s.img);
+      if (s.after) new Image().src = src(s.after);
+      if (s.seq) for (let k = 0; k < s.seq[1]; k++) new Image().src = seqSrc(s, k);
+    });
+    $('missN').textContent = 0;
+    show('play');
+    step();
+  }
+
+  function step() {
+    const s = stage.steps[si];
+    busy = false; stepMisses = 0; scrollP = 0;
+    $('prog').style.width = si / stage.steps.length * 100 + '%';
+    img.src = s.seq ? seqSrc(s, 0) : src(s.img);
+    shot.className = s.type === 'info' ? 'dim' : s.type === 'quiz' ? 'quiz' : '';
+    toast.classList.remove('on');
+    target.className = '';
+    $('swipe').style.display = s.type === 'scroll' ? 'block' : 'none';
+    if (s.rect) {
+      const [x, y, w, h] = s.rect;
+      Object.assign(target.style, { left: x / 5.9 + '%', top: y / 12.8 + '%', width: w / 5.9 + '%', height: h / 12.8 + '%' });
+    }
+    // カードは正解の場所に重ならない側に出す
+    const pos = s.card || (s.type === 'info' ? 'mid' : s.type === 'quiz' ? 'bottom' : s.type === 'scroll' ? 'top' : s.rect[1] + s.rect[3] / 2 > 640 ? 'top' : 'bottom');
+    card.className = pos;
+    const label = { tap: 'タップしよう', scroll: 'スクロールしよう', quiz: 'クイズ', info: 'ポイント' }[s.type];
+    let html = `<small>${si + 1} / ${stage.steps.length}　${label}</small><b>${s.text}</b>` + (s.sub ? `<p>${s.sub}</p>` : '');
+    if (s.type === 'quiz') html += `<div class="btns">${s.choices.map((c, i) => `<button data-c="${i}">${c.label}</button>`).join('')}</div>`;
+    if (s.type === 'info') html += `<div class="btns"><button data-next>次へ</button></div>`;
+    card.innerHTML = html;
+  }
+
+  // スクロールの場面: 録画のコマを、指を動かした分だけ進める(戻すこともできる)
+  function scrollBy(dy) {
+    const s = stage.steps[si];
+    scrollP = Math.min(1, Math.max(0, scrollP + dy / (shot.clientHeight * (s.len || 1.5))));
+    img.src = seqSrc(s, Math.round(scrollP * (s.seq[1] - 1)));
+    if (scrollP > .05) $('swipe').style.display = 'none';
+    if (scrollP >= 1) correct();
+  }
+
+  function miss(msg, x, y) {
+    misses++; stepMisses++;
+    $('missN').textContent = misses;
+    navigator.vibrate?.(60);
+    shot.classList.remove('shake'); void shot.offsetWidth; shot.classList.add('shake');
+    toast.textContent = msg;
+    toast.style.left = Math.min(Math.max(x, 25), 75) + '%';
+    toast.style.top = Math.max(y, 12) + '%';
+    toast.classList.add('on');
+    clearTimeout(miss.t); miss.t = setTimeout(() => toast.classList.remove('on'), 1400);
+    // 2回間違えたら正解の場所を光らせる
+    if (stepMisses >= 2 && stage.steps[si].type === 'tap') target.classList.add('hint');
+  }
+
+  function correct() {
+    const s = stage.steps[si];
+    busy = true;
+    toast.classList.remove('on');
+    const go = () => s.warn ? ($('modalText').textContent = s.warn, $('modal').classList.add('on')) : advance();
+    if (s.type === 'tap') {
+      target.className = 'hit';
+      setTimeout(() => { if (s.after) { img.src = src(s.after); target.className = ''; } }, 350);
+      setTimeout(go, s.after ? 1200 : 550);
+    } else if (s.type === 'scroll') {
+      $('swipe').style.display = 'none';
+      setTimeout(go, 350);
+    } else go();
+  }
+
+  function advance() {
+    $('modal').classList.remove('on');
+    si++;
+    si < stage.steps.length ? step() : clear();
+  }
+
+  function clear() {
+    const n = misses === 0 ? 3 : misses <= 2 ? 2 : 1;
+    saveBest(stage.id, n);
+    $('stars').textContent = starText(n);
+    $('result').textContent = misses === 0 ? 'ノーミス！完璧です。' : `ミス ${misses}回。もう一度やると覚えやすいです。`;
+    const warns = stage.steps.filter(s => s.warn);
+    $('review').innerHTML = warns.map(s => `<li>${s.warn}</li>`).join('');
+    $('reviewTitle').style.display = warns.length ? '' : 'none';
+    $('next').style.display = STAGES.indexOf(stage) < STAGES.length - 1 ? '' : 'none';
+    show('clear');
+  }
+
+  // スクショへの操作: 動かさずに離せばタップ、上に動かせばスワイプ
+  let down = null;
+  shot.addEventListener('pointerdown', e => {
+    if (e.target.closest('#card')) return;
+    down = { x: e.clientX, y: e.clientY, lastY: e.clientY, moved: 0 };
+    shot.setPointerCapture?.(e.pointerId);
+  });
+  shot.addEventListener('pointermove', e => {
+    if (!down || busy || stage.steps[si].type !== 'scroll') return;
+    down.moved += Math.abs(e.clientY - down.lastY);
+    scrollBy(down.lastY - e.clientY);
+    down.lastY = e.clientY;
+  });
+  shot.addEventListener('pointercancel', () => (down = null));
+  shot.addEventListener('pointerup', e => {
+    if (!down || busy) return (down = null);
+    const dx = e.clientX - down.x, dy = e.clientY - down.y, moved = down.moved;
+    down = null;
+    const s = stage.steps[si], r = shot.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width * 100, py = (e.clientY - r.top) / r.height * 100;
+    if (s.type === 'scroll') return moved < 10 && miss('タップではなく、上にスワイプしてスクロール', px, py);
+    if (s.type !== 'tap' || Math.abs(dx) > 14 || Math.abs(dy) > 14) return;
+    const x = px * 5.9, y = py * 12.8;
+    const inside = ([rx, ry, rw, rh]) => x >= rx && x <= rx + rw && y >= ry && y <= ry + rh;
+    if (inside(s.rect)) return correct();
+    const trap = (s.traps || []).find(t => inside(t.rect));
+    miss(trap ? trap.msg : 'そこじゃないよ', px, py);
+  });
+  shot.addEventListener('wheel', e => { if (!busy && stage.steps[si].type === 'scroll') scrollBy(e.deltaY); });
+
+  card.addEventListener('click', e => {
+    if (busy) return;
+    const s = stage.steps[si];
+    if (e.target.dataset.next !== undefined) return advance();
+    if (e.target.dataset.c === undefined) return;
+    const c = s.choices[e.target.dataset.c];
+    if (c.ok) return correct();
+    e.target.classList.add('ng');
+    miss(c.msg, 50, 40);
+  });
+
+  $('stages').addEventListener('click', e => { const b = e.target.closest('.stage'); if (b) start(Number(b.dataset.i)); });
+  $('modalOk').onclick = advance;
+  $('quit').onclick = home;
+  $('back').onclick = home;
+  $('again').onclick = () => start(STAGES.indexOf(stage));
+  $('next').onclick = () => start(STAGES.indexOf(stage) + 1);
+  home();
+</script>
+</body>
+</html>
