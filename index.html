@@ -29,6 +29,8 @@
   .stage span { display: block; font-size: 14px; color: #55607a; margin-top: 4px; }
   .stage i { display: block; font-style: normal; margin-top: 10px; font-size: 20px; color: var(--accent); letter-spacing: 3px; }
   .stage i.none { color: #b3bbcc; font-size: 14px; letter-spacing: 0; }
+  .stage { position: relative; padding-left: 62px; }
+  .stage .stage-number { position: absolute; top: 18px; left: 14px; margin: 0; width: 34px; height: 34px; border-radius: 50%; background: #eaf0ff; color: #1d3272; display: grid; place-items: center; font-weight: 900; }
 
   /* ---- プレイ画面 ---- */
   #play { align-items: center; height: 100dvh; }
@@ -39,12 +41,31 @@
   .miss { font-size: 14px; white-space: nowrap; }
   /* スクショの枠。高さに合わせて、比率 590:1280 を保つ */
   #shot {
-    position: relative; flex: none; height: calc(100dvh - 48px); aspect-ratio: 590 / 1280; max-width: 100vw;
+    position: relative; flex: none; height: min(calc(100dvh - 48px), calc(100vw * 1280 / 590)); aspect-ratio: 590 / 1280; max-width: 100vw;
     overflow: hidden; touch-action: none; background: #000;
   }
   #shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; -webkit-user-drag: none; }
   #shot.dim img { filter: brightness(.45); }
   #shot.quiz img { filter: brightness(.75); }
+  #shot.plain { background: #f2f6fb; }
+  #scene { position: absolute; left: 0; top: 0; width: 590px; height: 1280px; transform-origin: top left; background: #f3f5f8; color: #24334a; pointer-events: none; }
+  #shot.dim #scene { filter: brightness(.65); }
+  #shot.quiz #scene { filter: brightness(.85); }
+  .fx-address { height: 128px; padding: 12px 28px; background: #e4e9ef; font-size: 21px; }
+  .fx-address div { margin-top: 12px; padding: 12px; border-radius: 12px; text-align: center; background: #fff; }
+  .fx-brand { height: 84px; padding: 22px 30px; background: #fff; border-bottom: 2px solid #d9deea; font-size: 32px; font-weight: 900; }
+  .fx-brand span { float: right; font-size: 20px; line-height: 40px; color: #66748a; }
+  .fx-body { padding: 36px 32px; font-size: 27px; line-height: 1.6; }
+  .fx-body h2 { font-size: 32px; margin-bottom: 26px; }
+  .fx-body h3 { font-size: 34px; margin: 20px 0; }
+  .fx-body label { display: block; margin-top: 16px; font-size: 23px; color: #56647a; }
+  .fx-field { border: 2px solid #c5cfdd; border-radius: 12px; padding: 20px; background: #fff; margin: 10px 0 24px; }
+  .fx-badge { background: #e2f4ef; color: #167b60; border-radius: 12px; padding: 12px; }
+  .fx-body .fx-points { font-size: 56px; font-weight: 900; color: #da6b00; }
+  .fx-success { color: #128464; font-size: 64px; font-weight: 900; margin: 22px 0; }
+  .fx-button { position: absolute; display: grid; place-items: center; border-radius: 14px; background: #167d72; border: 2px solid #11685f; color: #fff; font-size: 29px; font-weight: 700; }
+  .fx-button.muted { background: #e2e7ef; border-color: #bac4d3; color: #4a5870; }
+  .fx-footer { position: absolute; bottom: 0; width: 100%; height: 85px; background: #e4e9ef; text-align: center; padding: 20px; font-size: 32px; }
   #shot.shake { animation: shake .3s; }
   @keyframes shake { 25% { transform: translateX(-8px) } 50% { transform: translateX(8px) } 75% { transform: translateX(-5px) } }
   #shot.up img { transition: transform .45s ease-in, opacity .45s; transform: translateY(-35%); opacity: 0; }
@@ -60,7 +81,7 @@
   /* 間違えたときのひとこと */
   #toast {
     position: absolute; transform: translate(-50%, -130%); background: var(--warn); color: #fff; font-weight: 700; font-size: 15px;
-    padding: 8px 14px; border-radius: 12px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .2s; z-index: 5;
+    padding: 8px 14px; border-radius: 12px; width: max-content; max-width: 92%; white-space: normal; pointer-events: none; opacity: 0; transition: opacity .2s; z-index: 5;
   }
   #toast.on { opacity: 1; }
 
@@ -68,6 +89,7 @@
   #card {
     position: absolute; left: 10px; right: 10px; background: #fff; color: var(--ink); border-radius: 16px; padding: 14px 16px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, .45); z-index: 4;
+    max-height: calc(100% - 20px); overflow-y: auto; touch-action: pan-y;
   }
   #card.top { top: 10px; } #card.bottom { bottom: 10px; } #card.mid { top: 50%; transform: translateY(-50%); }
   #card small { display: block; color: var(--accent); font-weight: 900; font-size: 12px; margin-bottom: 4px; }
@@ -76,11 +98,12 @@
   #card .btns { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
   #card .btns button { background: var(--ink); color: #fff; font-weight: 700; font-size: 16px; padding: 14px; border-radius: 12px; }
   #card .btns button.ng { background: #b3bbcc; }
+  #card .video-link { display: block; margin-top: 12px; padding: 12px; border-radius: 12px; background: #eaf0ff; border: 2px solid #1d3272; color: #1d3272; text-align: center; text-decoration: none; font-size: 15px; font-weight: 700; }
 
   /* 重要ポイントの表示 */
   #modal { position: fixed; inset: 0; background: rgba(8, 14, 34, .75); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 10; }
   #modal.on { display: flex; }
-  #modal div { background: #fff; color: var(--ink); border-radius: 20px; padding: 24px 20px; max-width: 420px; width: 100%; text-align: center; animation: pop .3s cubic-bezier(.2, 1.4, .4, 1); }
+  #modal div { background: #fff; color: var(--ink); border-radius: 20px; padding: 24px 20px; max-width: 420px; max-height: calc(100dvh - 48px); overflow-y: auto; width: 100%; text-align: center; animation: pop .3s cubic-bezier(.2, 1.4, .4, 1); }
   @keyframes pop { from { transform: scale(.7); opacity: 0 } }
   #modal em { display: block; font-style: normal; font-weight: 900; color: var(--warn); font-size: 18px; margin-bottom: 10px; }
   #modal p { font-size: 17px; line-height: 1.7; font-weight: 700; text-align: left; }
@@ -113,6 +136,7 @@
   </div>
   <div id="shot">
     <img id="img" alt="">
+    <div id="scene" hidden aria-hidden="true"></div>
     <div id="target"></div>
     <div id="swipe">👆</div>
     <div id="toast"></div>
@@ -136,10 +160,13 @@
 <script src="stages.js"></script>
 <script>
   const $ = id => document.getElementById(id);
-  const shot = $('shot'), img = $('img'), target = $('target'), card = $('card'), toast = $('toast');
+  const shot = $('shot'), img = $('img'), scene = $('scene'), target = $('target'), card = $('card'), toast = $('toast');
   const src = name => `img/${name}.jpg`;
   const seqSrc = (s, k) => `img/seq/${s.seq[0]}-${String(k + 1).padStart(2, '0')}.jpg`;
   let stage, si, misses, stepMisses, busy, scrollP;
+  let playVersion = 0;
+  const resizeScene = () => { scene.style.transform = `scale(${shot.getBoundingClientRect().width / 590})`; };
+  new ResizeObserver(resizeScene).observe(shot);
 
   // 成績の保存(使えない環境でも動くようにする)
   const best = id => { try { return Number(localStorage.getItem('stars-' + id)) || 0; } catch { return 0; } };
@@ -152,18 +179,23 @@
   }
 
   function home() {
+    playVersion++;
+    busy = true;
+    down = null;
+    $('modal').classList.remove('on');
     $('stages').innerHTML = STAGES.map((s, i) => {
       const b = best(s.id);
-      return `<button class="stage" data-i="${i}"><b>${s.title}</b><span>${s.lead}</span>` +
+      return `<button class="stage" data-i="${i}"><span class="stage-number">${i + 1}</span><b>${s.title}</b><span>${s.lead}</span>` +
         (b ? `<i>${starText(b)}</i>` : `<i class="none">まだクリアしていません</i>`) + `</button>`;
     }).join('');
     show('home');
   }
 
   function start(i) {
+    playVersion++;
     stage = STAGES[i]; si = 0; misses = 0;
     stage.steps.forEach(s => {
-      new Image().src = src(s.img);
+      if (s.img && !s.html) new Image().src = src(s.img);
       if (s.after) new Image().src = src(s.after);
       if (s.seq) for (let k = 0; k < s.seq[1]; k++) new Image().src = seqSrc(s, k);
     });
@@ -176,8 +208,17 @@
     const s = stage.steps[si];
     busy = false; stepMisses = 0; scrollP = 0;
     $('prog').style.width = si / stage.steps.length * 100 + '%';
-    img.src = s.seq ? seqSrc(s, 0) : src(s.img);
-    shot.className = s.type === 'info' ? 'dim' : s.type === 'quiz' ? 'quiz' : '';
+    const plain = !s.img && !s.html && !s.seq;
+    img.hidden = Boolean(s.html) || plain;
+    if (img.hidden) img.removeAttribute('src');
+    else img.src = s.seq ? seqSrc(s, 0) : src(s.img);
+    scene.hidden = !s.html;
+    scene.innerHTML = s.html || '';
+    resizeScene();
+    shot.className = plain ? 'plain' : s.type === 'info' ? 'dim' : s.type === 'quiz' ? 'quiz' : '';
+    // 説明・クイズの長いカードは小画面でも指でスクロールできるようにする。
+    shot.style.touchAction = s.type === 'info' || s.type === 'quiz' ? 'pan-y' : 'none';
+    clearTimeout(miss.t);
     toast.classList.remove('on');
     target.className = '';
     $('swipe').style.display = s.type === 'scroll' ? 'block' : 'none';
@@ -186,13 +227,15 @@
       Object.assign(target.style, { left: x / 5.9 + '%', top: y / 12.8 + '%', width: w / 5.9 + '%', height: h / 12.8 + '%' });
     }
     // カードは正解の場所に重ならない側に出す
-    const pos = s.card || (s.type === 'info' ? 'mid' : s.type === 'quiz' ? 'bottom' : s.type === 'scroll' ? 'top' : s.rect[1] + s.rect[3] / 2 > 640 ? 'top' : 'bottom');
+    const pos = plain ? 'mid' : s.card || (s.type === 'info' ? 'mid' : s.type === 'quiz' ? 'bottom' : s.type === 'scroll' ? 'top' : s.rect[1] + s.rect[3] / 2 > 640 ? 'top' : 'bottom');
     card.className = pos;
     const label = { tap: 'タップしよう', scroll: 'スクロールしよう', quiz: 'クイズ', info: 'ポイント' }[s.type];
     let html = `<small>${si + 1} / ${stage.steps.length}　${label}</small><b>${s.text}</b>` + (s.sub ? `<p>${s.sub}</p>` : '');
     if (s.type === 'quiz') html += `<div class="btns">${s.choices.map((c, i) => `<button data-c="${i}">${c.label}</button>`).join('')}</div>`;
     if (s.type === 'info') html += `<div class="btns"><button data-next>次へ</button></div>`;
+    if (s.link) html += `<a class="video-link" href="${s.link.url}" target="_blank" rel="noopener noreferrer">${s.link.label} ↗</a>`;
     card.innerHTML = html;
+    card.scrollTop = 0;
   }
 
   // スクロールの場面: 録画のコマを、指を動かした分だけ進める(戻すこともできる)
@@ -221,15 +264,17 @@
   function correct() {
     const s = stage.steps[si];
     busy = true;
+    const version = playVersion;
+    const later = (fn, ms) => setTimeout(() => { if (version === playVersion) fn(); }, ms);
     toast.classList.remove('on');
     const go = () => s.warn ? ($('modalText').textContent = s.warn, $('modal').classList.add('on')) : advance();
     if (s.type === 'tap') {
       target.className = 'hit';
-      setTimeout(() => { if (s.after) { img.src = src(s.after); target.className = ''; } }, 350);
-      setTimeout(go, s.after ? 1200 : 550);
+      later(() => { if (s.after) { img.src = src(s.after); target.className = ''; } }, 350);
+      later(go, s.after ? 1200 : 550);
     } else if (s.type === 'scroll') {
       $('swipe').style.display = 'none';
-      setTimeout(go, 350);
+      later(go, 350);
     } else go();
   }
 
@@ -254,7 +299,7 @@
   // スクショへの操作: 動かさずに離せばタップ、上に動かせばスワイプ
   let down = null;
   shot.addEventListener('pointerdown', e => {
-    if (e.target.closest('#card')) return;
+    if (busy || e.target.closest('#card')) return;
     down = { x: e.clientX, y: e.clientY, lastY: e.clientY, moved: 0 };
     shot.setPointerCapture?.(e.pointerId);
   });
@@ -284,7 +329,7 @@
   card.addEventListener('click', e => {
     if (busy) return;
     const s = stage.steps[si];
-    if (e.target.dataset.next !== undefined) return advance();
+    if (e.target.dataset.next !== undefined) return correct();
     if (e.target.dataset.c === undefined) return;
     const c = s.choices[e.target.dataset.c];
     if (c.ok) return correct();
