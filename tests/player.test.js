@@ -56,11 +56,12 @@ for (let i = 0; i < count; i++) {
     if (s.type === 'info' || s.type === 'quiz') assert.equal(node('shot').style.touchAction, 'pan-y');
     if (s.html) { assert.equal(node('scene').innerHTML, s.html); assert.ok(!node('scene').hidden); }
     else assert.equal(node('scene').innerHTML, '');
-    if (s.link) {
-      assert.ok(node('card').innerHTML.includes(s.link.url));
-      assert.match(node('card').innerHTML, /target="_blank"/);
-      assert.match(node('card').innerHTML, /rel="noopener noreferrer"/);
-      clickCard({}); assert.equal(run('si'), k);
+    if (s.video) {
+      assert.match(node('card').innerHTML, /data-video/);
+      clickCard({ video: '' }); assert.equal(run('si'), k);
+      assert.ok(node('player').classList.contains('on'));
+      assert.match(node('video').src, new RegExp('video/' + s.video + '\.mp4$'));
+      node('playerClose').onclick(); assert.ok(!node('player').classList.contains('on'));
     }
     if (s.type === 'info') clickCard({ next: '' });
     if (s.type === 'quiz') {

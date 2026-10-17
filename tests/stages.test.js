@@ -59,7 +59,8 @@ for (const stage of stages) test(stage.id + ' data and assets', () => {
     }
     for (const name of [s.img, s.after].filter(Boolean)) assert.ok(fs.existsSync(path.join(root, 'img', name + '.jpg')), label + ' ' + name);
     if (s.seq) for (let k = 1; k <= s.seq[1]; k++) assert.ok(fs.existsSync(path.join(root, 'img', 'seq', s.seq[0] + '-' + String(k).padStart(2, '0') + '.jpg')), label);
-    if (s.link) { assert.ok(s.link.label); assert.match(s.link.url, /^https:\/\//); }
+    assert.ok(!s.link, label + ' link steps are replaced by in-app videos');
+    if (s.video) { assert.equal(s.type, 'info', label); assert.ok(fs.existsSync(path.join(root, 'video', s.video + '.mp4')), label + ' ' + s.video); }
     if (s.html) { assert.equal(typeof s.html, 'string'); assert.ok(s.html.length); }
   }
 });
@@ -69,6 +70,6 @@ test('new display types and video links are exercised', () => {
   assert.ok(all.some(s => s.type === 'quiz' && !s.img && !s.html));
   const fx = stages.find(s => s.id === 'fx');
   assert.ok(fx && fx.steps.every(s => s.html && !s.img));
-  assert.equal(all.filter(s => s.link).length, 3);
+  assert.equal(all.filter(s => s.video).map(s => s.video).join(','), 'a8,inq-hapitas,inq-moppy');
 });
 console.log(checks + ' data checks passed');

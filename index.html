@@ -98,7 +98,12 @@
   #card .btns { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
   #card .btns button { background: var(--ink); color: #fff; font-weight: 700; font-size: 16px; padding: 14px; border-radius: 12px; }
   #card .btns button.ng { background: #b3bbcc; }
-  #card .video-link { display: block; margin-top: 12px; padding: 12px; border-radius: 12px; background: #eaf0ff; border: 2px solid #1d3272; color: #1d3272; text-align: center; text-decoration: none; font-size: 15px; font-weight: 700; }
+  #card .btns button.video-btn { background: #eaf0ff; color: #1d3272; border: 2px solid #1d3272; }
+  /* 手順動画の再生画面 */
+  #player { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; z-index: 20; }
+  #player.on { display: flex; }
+  #player video { flex: 1; min-height: 0; width: 100%; object-fit: contain; background: #000; }
+  #player button { flex: none; margin: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: var(--accent); color: #fff; font-weight: 900; font-size: 16px; padding: 14px; border-radius: 12px; }
 
   /* 重要ポイントの表示 */
   #modal { position: fixed; inset: 0; background: rgba(8, 14, 34, .75); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 10; }
@@ -155,6 +160,7 @@
   <button class="wide sub" id="back">ステージ一覧</button>
 </section>
 
+<div id="player"><video id="video" controls playsinline preload="none"></video><button id="playerClose">閉じて練習に戻る</button></div>
 <div id="modal"><div><em>⚠️ 重要ポイント</em><p id="modalText"></p><button id="modalOk">わかった</button></div></div>
 
 <script src="stages.js"></script>
@@ -232,8 +238,7 @@
     const label = { tap: 'タップしよう', scroll: 'スクロールしよう', quiz: 'クイズ', info: 'ポイント' }[s.type];
     let html = `<small>${si + 1} / ${stage.steps.length}　${label}</small><b>${s.text}</b>` + (s.sub ? `<p>${s.sub}</p>` : '');
     if (s.type === 'quiz') html += `<div class="btns">${s.choices.map((c, i) => `<button data-c="${i}">${c.label}</button>`).join('')}</div>`;
-    if (s.type === 'info') html += `<div class="btns"><button data-next>次へ</button></div>`;
-    if (s.link) html += `<a class="video-link" href="${s.link.url}" target="_blank" rel="noopener noreferrer">${s.link.label} ↗</a>`;
+    if (s.type === 'info') html += `<div class="btns">${s.video ? '<button class="video-btn" data-video>▶ 手順動画を見る</button>' : ''}<button data-next>次へ</button></div>`;
     card.innerHTML = html;
     card.scrollTop = 0;
   }
@@ -329,6 +334,7 @@
   card.addEventListener('click', e => {
     if (busy) return;
     const s = stage.steps[si];
+    if (e.target.dataset.video !== undefined) return openVideo(s.video);
     if (e.target.dataset.next !== undefined) return correct();
     if (e.target.dataset.c === undefined) return;
     const c = s.choices[e.target.dataset.c];
@@ -339,6 +345,20 @@
 
   $('stages').addEventListener('click', e => { const b = e.target.closest('.stage'); if (b) start(Number(b.dataset.i)); });
   $('modalOk').onclick = advance;
+  // 手順動画: 注釈入りの動画をアプリ内で再生する
+  function openVideo(name) {
+    const v = $('video');
+    v.src = `video/${name}.mp4`;
+    $('player').classList.add('on');
+    v.play?.().catch(() => {});
+  }
+  $('playerClose').onclick = () => {
+    const v = $('video');
+    v.pause?.();
+    v.removeAttribute('src');
+    v.load?.(); // 読み込みも止める
+    $('player').classList.remove('on');
+  };
   $('quit').onclick = home;
   $('back').onclick = home;
   $('again').onclick = () => start(STAGES.indexOf(stage));
