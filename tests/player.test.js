@@ -87,8 +87,9 @@ for (const stepIndex of [2, 5, 7]) {
   for (let k = s.target.from; k < s.seq[1]; k++) {
     frame(k); assertGuide(targetAt(s, next, k));
     assert.equal(node('img').src, `img/seq/${s.seq[0]}-${String(k).padStart(2, '0')}.jpg`);
-    assert.equal(node('swipe').style.display, 'block');
+    assert.equal(node('swipe').style.display, 'none'); // タップ場所が見えたら指マークは消す
   }
+  if (s.target.from > 1) { frame(s.target.from - 1); assert.equal(node('swipe').style.display, 'block'); }
   frame(s.target.from);
   if (s.target.from > 1) {
     frame(s.target.from - 1); assert.ok(!node('target').classList.contains('hint'));
@@ -119,7 +120,7 @@ openStep(0, 7);
 const drag = { clientX: 150, clientY: 560, target: node('shot') };
 node('shot').events.pointerdown(drag);
 node('shot').events.pointermove({ ...drag, clientY: 520 });
-assert.equal(node('swipe').style.display, 'block');
+assert.equal(node('swipe').style.display, 'none'); // この場面は最初からタップ場所が見えている
 node('shot').events.pointermove(drag);
 node('shot').events.pointerup(drag);
 assert.equal(run('si'), 7); assert.equal(run('stepMisses'), 0);
@@ -162,7 +163,7 @@ for (let i = 0; i < count; i++) {
     }
     if (s.type === 'scroll') {
       run('scrollBy(shot.clientHeight * (stage.steps[si].len || 1.5) * .25)');
-      assert.equal(node('swipe').style.display, 'block');
+      assert.equal(node('swipe').style.display, run('activeRect()') ? 'none' : 'block');
       run('scrollBy(100000)'); assert.match(node('img').src, /seq\//);
       assert.equal(node('swipe').style.display, 'none');
     }

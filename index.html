@@ -247,6 +247,8 @@
   function updateTarget() {
     const rect = activeRect();
     target.className = rect && stage.guide ? 'hint' : '';
+    // スクロールの場面: タップする場所が見えたら、スクロールを促す指マークは消す
+    if (stage.steps[si].type === 'scroll' && !busy) $('swipe').style.display = rect ? 'none' : 'block';
     if (rect) {
       const [x, y, w, h] = rect;
       Object.assign(target.style, { left: x / 5.9 + '%', top: y / 12.8 + '%', width: w / 5.9 + '%', height: h / 12.8 + '%' });

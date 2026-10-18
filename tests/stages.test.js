@@ -32,10 +32,8 @@ test('Safari scroll targets match supplied frame coordinates', () => {
   ];
   assert.deepEqual(stages[0].steps.filter(s => s.type === 'scroll').map(s => s.target), expected);
 });
-test('Safari warning assumes up-to-date iOS', () => {
-  const warn = stages[0].steps.find(s => s.after).warn;
-  for (const word of ['すべてのcookieをブロック', 'オフ', '一番下', '詳細', '最新版', 'アップデート', '毎回の確認は不要']) assert.ok(warn.includes(word), word);
-  assert.doesNotMatch(warn, /iOS\s*(17|12)|トラッキングの停止を要求/);
+test('Safari tracking warning is the short keep-once note', () => {
+  assert.equal(stages[0].steps.find(s => s.after).warn, '一度設定すればキープされるので、毎回の確認は不要。');
 });
 function rect(r, label) {
   assert.ok(Array.isArray(r) && r.length === 4 && r.every(Number.isFinite), label);
