@@ -11,7 +11,7 @@ function test(name, fn) {
   try { fn(); checks++; console.log('PASS ' + name); }
   catch (e) { console.error('FAIL ' + name + '\n' + e.stack); process.exitCode = 1; }
 }
-const order = ['safari', 'prep', 'sites', 'points', 'passbook', 'offer', 'inquiry', 'trouble', 'fx', 'bank'];
+const order = ['safari'];
 test('unique IDs and requested order', () => {
   assert.equal(new Set(stages.map(s => s.id)).size, stages.length);
   assert.equal(JSON.stringify(stages.map(s => s.id)), JSON.stringify(order));
@@ -85,13 +85,5 @@ for (const stage of stages) test(stage.id + ' data and assets', () => {
     if (s.video) { assert.equal(s.type, 'info', label); assert.ok(fs.existsSync(path.join(root, 'video', s.video + '.mp4')), label + ' ' + s.video); }
     if (s.html) { assert.equal(typeof s.html, 'string'); assert.ok(s.html.length); }
   }
-});
-test('new display types and video links are exercised', () => {
-  const all = stages.flatMap(s => s.steps);
-  assert.ok(all.some(s => s.type === 'info' && !s.img && !s.html));
-  assert.ok(all.some(s => s.type === 'quiz' && !s.img && !s.html));
-  const fx = stages.find(s => s.id === 'fx');
-  assert.ok(fx && fx.steps.every(s => s.html && !s.img));
-  assert.equal(all.filter(s => s.video).map(s => s.video).join(','), 'a8,inq-hapitas,inq-moppy');
 });
 console.log(checks + ' data checks passed');

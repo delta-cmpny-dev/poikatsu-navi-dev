@@ -68,7 +68,7 @@ function assertGuide(rect) {
 }
 openStep(0, 1); assertGuide(run('stage.steps[si].rect'));
 // どのステージのタップ画面でも、最初から枠が出る。間違えてもひとことが出る。
-openStep(2, 4); assertGuide(run('stage.steps[si].rect'));
+openStep(0, 4); assertGuide(run('stage.steps[si].rect'));
 tap([580, 1200, 0, 0]); assertGuide(run('stage.steps[si].rect'));
 assert.ok(node('toast').classList.contains('on'));
 flush();
@@ -181,7 +181,7 @@ run('home()');
 assert.equal((node('stages').innerHTML.match(/クリア済み ✓/g) || []).length, count);
 assert.doesNotMatch(node('stages').innerHTML, /[★☆]|まだクリアしていません/);
 // 保存が使えない環境でも、クリアとホーム表示を続行する。
-run('localStorage.getItem = () => { throw Error("unavailable"); }; localStorage.setItem = () => { throw Error("unavailable"); }; start(1); clear(); home()');
+run('localStorage.getItem = () => { throw Error("unavailable"); }; localStorage.setItem = () => { throw Error("unavailable"); }; start(0); clear(); home()');
 assert.ok(node('home').classList.contains('on'));
 // タップ成功の待機中にやめて再開しても、前のタイマーが次のゲームを進めない。
 run('start(0); si = 1; step()'); tap(run('stage.steps[si].rect'));
