@@ -46,6 +46,11 @@ const STAGES = [
       { type: 'quiz', img: 'safari-1130', text: '③コンテンツブロッカー（広告ブロッカー）を入れている人は？',
         choices: [{ label: '入れたままでOK', msg: '入れたままだとNG' }, { label: '申し込み時は毎回オフ', ok: true }],
         warn: 'コンテンツブロッカー（広告ブロッカー）を入れている人は、申し込み時は毎回オフにする。' },
+      { type: 'scroll', img: 'safari-ck-195', seq: ['cookie', 51], len: 1.4, text: '最後に、Safari設定を下にスクロールして「詳細」を探してタップしよう',
+        target: { from: 27, ys: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1185,1171,1146,1123,1098,1085,1069,1060,1047,1040,1030,1024,1019,1016,1012,1011,1043,1062,1076,1083,1088,1090,1091,1092,1092] } },
+      { type: 'tap', img: 'safari-ck-195', text: '「詳細」をタップ', rect: [24, 1092, 542, 80] },
+      { type: 'tap', img: 'safari-ck-225', after: 'safari-ck-345', text: '「すべてのCookieをブロック」をオフにしよう', rect: [30, 495, 538, 78] },
+      { type: 'info', img: 'safari-ck-345', card: 'top', text: '完了！', sub: '「すべてのCookieをブロック」がオフになりました。これでSafariの設定は終わりです。' },
     ],
   },
   {
