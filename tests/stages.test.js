@@ -33,7 +33,7 @@ test('Safari scroll targets match supplied frame coordinates', () => {
   assert.deepEqual(stages[0].steps.filter(s => s.type === 'scroll').slice(0, 3).map(s => s.target), expected);
 });
 test('Safari tracking warning is the short keep-once note', () => {
-  assert.equal(stages[0].steps.find(s => s.after).warn, '一度設定すればキープされるので、毎回の確認は不要。');
+  assert.equal(stages[0].steps.find(s => s.after).warn, '「サイト越えトラッキングを防ぐ」は一度設定すればキープされるので、毎回の確認は不要。');
 });
 function rect(r, label) {
   assert.ok(Array.isArray(r) && r.length === 4 && r.every(Number.isFinite), label);

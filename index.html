@@ -203,10 +203,20 @@
     step();
   }
 
+  // 表示用の番号: 「スクロールして探してタップ」はスクロールとタップで1つと数える
+  // (スクロールの途中でタップすると次のタップを飛ばすため、別々に数えると番号が飛ぶ)
+  function stepNo(i) {
+    const merged = k => k > 0 && stage.steps[k].type === 'tap' && stage.steps[k - 1].type === 'scroll' && stage.steps[k - 1].target;
+    let no = 0, total = 0;
+    stage.steps.forEach((_, k) => { if (!merged(k)) total++; if (k <= i && !merged(k)) no++; });
+    return [no, total];
+  }
+
   function step() {
     const s = stage.steps[si];
     busy = false; stepMisses = 0; scrollP = 0;
-    $('prog').style.width = si / stage.steps.length * 100 + '%';
+    const [no, total] = stepNo(si);
+    $('prog').style.width = (no - 1) / total * 100 + '%';
     const plain = !s.img && !s.html && !s.seq;
     img.hidden = Boolean(s.html) || plain;
     if (img.hidden) img.removeAttribute('src');
@@ -225,7 +235,7 @@
     const pos = plain ? 'mid' : s.card || (s.type === 'info' ? 'mid' : s.type === 'quiz' ? 'bottom' : s.type === 'scroll' ? 'top' : s.rect[1] + s.rect[3] / 2 > 640 ? 'top' : 'bottom');
     card.className = pos;
     const label = { tap: 'タップしよう', scroll: 'スクロールしよう', quiz: 'クイズ', info: 'ポイント' }[s.type];
-    let html = `<small>${si + 1} / ${stage.steps.length}　${label}</small><b>${s.text}</b>` + (s.sub ? `<p>${s.sub}</p>` : '');
+    let html = `<small>${no} / ${total}　${label}</small><b>${s.text}</b>` + (s.sub ? `<p>${s.sub}</p>` : '');
     if (s.type === 'quiz') html += `<div class="btns">${s.choices.map((c, i) => `<button data-c="${i}">${c.label}</button>`).join('')}</div>`;
     if (s.type === 'info') html += `<div class="btns">${s.video ? '<button class="video-btn" data-video>▶ 手順動画を見る</button>' : ''}<button data-next>次へ</button></div>`;
     card.innerHTML = html;
