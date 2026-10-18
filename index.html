@@ -72,6 +72,8 @@
   /* 正解の場所(ヒントとして出す枠) */
   #target { position: absolute; border: 4px solid var(--accent); border-radius: 10px; display: none; pointer-events: none; }
   #target.hint { display: block; animation: pulse 1s ease-in-out infinite; }
+  /* 確認してほしい場所の枠(押す場所ではない) */
+  .mark { position: absolute; border: 4px solid var(--accent); border-radius: 10px; pointer-events: none; }
   #target.hit { display: block; border-color: var(--ok); background: rgba(23, 166, 115, .25); }
   @keyframes pulse { 50% { box-shadow: 0 0 0 10px rgba(255, 138, 0, .35) } }
   /* 上にスワイプの案内 */
@@ -140,6 +142,7 @@
     <img id="img" alt="">
     <div id="scene" hidden aria-hidden="true"></div>
     <div id="target"></div>
+    <div id="marks"></div>
     <div id="swipe">👆</div>
     <div id="toast"></div>
     <div id="card"></div>
@@ -230,6 +233,8 @@
     clearTimeout(miss.t);
     toast.classList.remove('on');
     $('swipe').style.display = s.type === 'scroll' ? 'block' : 'none';
+    $('marks').innerHTML = (s.marks || []).map(([x, y, w, h]) =>
+      `<div class="mark" style="left:${x / 5.9}%;top:${y / 12.8}%;width:${w / 5.9}%;height:${h / 12.8}%"></div>`).join('');
     updateTarget();
     // カードは正解の場所に重ならない側に出す
     const pos = plain ? 'mid' : s.card || (s.type === 'info' ? 'mid' : s.type === 'quiz' ? 'bottom' : s.type === 'scroll' ? 'top' : s.rect[1] + s.rect[3] / 2 > 640 ? 'top' : 'bottom');
