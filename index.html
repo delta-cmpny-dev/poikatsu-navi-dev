@@ -27,8 +27,8 @@
   .stage { background: #fff; color: var(--ink); border-radius: 18px; padding: 18px 20px; text-align: left; display: block; width: 100%; }
   .stage b { display: block; font-size: 20px; }
   .stage span { display: block; font-size: 14px; color: #55607a; margin-top: 4px; }
-  .stage i { display: block; font-style: normal; margin-top: 10px; font-size: 20px; color: var(--accent); letter-spacing: 3px; }
-  .stage i.none { color: #b3bbcc; font-size: 14px; letter-spacing: 0; }
+  .stage i { display: block; font-style: normal; margin-top: 10px; font-size: 14px; color: var(--ok); }
+  .stage i.none { color: #55607a; }
   .stage { position: relative; padding-left: 62px; }
   .stage .stage-number { position: absolute; top: 18px; left: 14px; margin: 0; width: 34px; height: 34px; border-radius: 50%; background: #eaf0ff; color: #1d3272; display: grid; place-items: center; font-weight: 900; }
 
@@ -38,7 +38,6 @@
   .bar button { background: rgba(255, 255, 255, .15); width: 36px; height: 36px; border-radius: 50%; font-size: 18px; }
   .track { flex: 1; height: 10px; background: rgba(255, 255, 255, .2); border-radius: 99px; overflow: hidden; }
   .track i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .3s; }
-  .miss { font-size: 14px; white-space: nowrap; }
   /* スクショの枠。高さに合わせて、比率 590:1280 を保つ */
   #shot {
     position: relative; flex: none; height: min(calc(100dvh - 48px), calc(100vw * 1280 / 590)); aspect-ratio: 590 / 1280; max-width: 100vw;
@@ -117,7 +116,6 @@
   /* ---- クリア画面 ---- */
   #clear { padding: 56px 20px 32px; gap: 16px; max-width: 520px; margin: 0 auto; text-align: center; }
   #clear h2 { font-size: 30px; }
-  #clear .stars { font-size: 52px; letter-spacing: 8px; color: var(--accent); }
   #clear ul { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 10px; }
   #clear li { background: #fff; color: var(--ink); border-left: 8px solid var(--warn); border-radius: 12px; padding: 12px 14px; font-size: 15px; line-height: 1.6; font-weight: 700; }
   #clear h3 { text-align: left; font-size: 16px; margin-top: 8px; }
@@ -137,7 +135,6 @@
   <div class="bar">
     <button id="quit" aria-label="やめる">✕</button>
     <div class="track"><i id="prog"></i></div>
-    <div class="miss">ミス <span id="missN">0</span></div>
   </div>
   <div id="shot">
     <img id="img" alt="">
@@ -151,8 +148,6 @@
 
 <section id="clear" class="view">
   <h2>ステージクリア！</h2>
-  <div class="stars" id="stars"></div>
-  <p id="result"></p>
   <h3 id="reviewTitle">⚠️ 重要ポイントのおさらい</h3>
   <ul id="review"></ul>
   <button class="wide" id="next">次のステージへ</button>
@@ -169,15 +164,14 @@
   const shot = $('shot'), img = $('img'), scene = $('scene'), target = $('target'), card = $('card'), toast = $('toast');
   const src = name => `img/${name}.jpg`;
   const seqSrc = (s, k) => `img/seq/${s.seq[0]}-${String(k + 1).padStart(2, '0')}.jpg`;
-  let stage, si, misses, stepMisses, busy, scrollP;
+  let stage, si, stepMisses, busy, scrollP;
   let playVersion = 0;
   const resizeScene = () => { scene.style.transform = `scale(${shot.getBoundingClientRect().width / 590})`; };
   new ResizeObserver(resizeScene).observe(shot);
 
-  // 成績の保存(使えない環境でも動くようにする)
-  const best = id => { try { return Number(localStorage.getItem('stars-' + id)) || 0; } catch { return 0; } };
-  const saveBest = (id, n) => { try { if (n > best(id)) localStorage.setItem('stars-' + id, n); } catch {} };
-  const starText = n => '★'.repeat(n) + '☆'.repeat(3 - n);
+  // クリアの有無だけ保存。以前の星の記録もクリア済みとして読む。
+  const isCleared = id => { try { return localStorage.getItem('cleared-' + id) === 'true' || Number(localStorage.getItem('stars-' + id)) > 0; } catch { return false; } };
+  const saveClear = id => { try { localStorage.setItem('cleared-' + id, 'true'); } catch {} };
 
   function show(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
@@ -190,22 +184,21 @@
     down = null;
     $('modal').classList.remove('on');
     $('stages').innerHTML = STAGES.map((s, i) => {
-      const b = best(s.id);
+      const done = isCleared(s.id);
       return `<button class="stage" data-i="${i}"><span class="stage-number">${i + 1}</span><b>${s.title}</b><span>${s.lead}</span>` +
-        (b ? `<i>${starText(b)}</i>` : `<i class="none">まだクリアしていません</i>`) + `</button>`;
+        (done ? `<i>クリア済み ✓</i>` : `<i class="none">まだクリアしていません</i>`) + `</button>`;
     }).join('');
     show('home');
   }
 
   function start(i) {
     playVersion++;
-    stage = STAGES[i]; si = 0; misses = 0;
+    stage = STAGES[i]; si = 0;
     stage.steps.forEach(s => {
       if (s.img && !s.html) new Image().src = src(s.img);
       if (s.after) new Image().src = src(s.after);
       if (s.seq) for (let k = 0; k < s.seq[1]; k++) new Image().src = seqSrc(s, k);
     });
-    $('missN').textContent = 0;
     show('play');
     step();
   }
@@ -226,12 +219,8 @@
     shot.style.touchAction = s.type === 'info' || s.type === 'quiz' ? 'pan-y' : 'none';
     clearTimeout(miss.t);
     toast.classList.remove('on');
-    target.className = '';
     $('swipe').style.display = s.type === 'scroll' ? 'block' : 'none';
-    if (s.rect) {
-      const [x, y, w, h] = s.rect;
-      Object.assign(target.style, { left: x / 5.9 + '%', top: y / 12.8 + '%', width: w / 5.9 + '%', height: h / 12.8 + '%' });
-    }
+    updateTarget();
     // カードは正解の場所に重ならない側に出す
     const pos = plain ? 'mid' : s.card || (s.type === 'info' ? 'mid' : s.type === 'quiz' ? 'bottom' : s.type === 'scroll' ? 'top' : s.rect[1] + s.rect[3] / 2 > 640 ? 'top' : 'bottom');
     card.className = pos;
@@ -243,18 +232,38 @@
     card.scrollTop = 0;
   }
 
+  // 表示画像・枠・タップ判定で同じコマ番号(1始まり)を使う。
+  const scrollFrame = s => Math.round(scrollP * (s.seq[1] - 1)) + 1;
+  function activeRect() {
+    const s = stage.steps[si];
+    if (s.type === 'tap') return s.rect;
+    if (s.type !== 'scroll' || !s.target || stage.steps[si + 1]?.type !== 'tap') return null;
+    const frame = scrollFrame(s);
+    if (frame < s.target.from) return null;
+    const [x, , w, h] = stage.steps[si + 1].rect;
+    return [x, s.target.ys[frame - 1], w, h];
+  }
+
+  function updateTarget() {
+    const rect = activeRect();
+    target.className = rect && stage.guide ? 'hint' : '';
+    if (rect) {
+      const [x, y, w, h] = rect;
+      Object.assign(target.style, { left: x / 5.9 + '%', top: y / 12.8 + '%', width: w / 5.9 + '%', height: h / 12.8 + '%' });
+    }
+  }
+
   // スクロールの場面: 録画のコマを、指を動かした分だけ進める(戻すこともできる)
   function scrollBy(dy) {
     const s = stage.steps[si];
     scrollP = Math.min(1, Math.max(0, scrollP + dy / (shot.clientHeight * (s.len || 1.5))));
-    img.src = seqSrc(s, Math.round(scrollP * (s.seq[1] - 1)));
-    if (scrollP > .05) $('swipe').style.display = 'none';
+    img.src = seqSrc(s, scrollFrame(s) - 1);
+    updateTarget();
     if (scrollP >= 1) correct();
   }
 
   function miss(msg, x, y) {
-    misses++; stepMisses++;
-    $('missN').textContent = misses;
+    stepMisses++;
     navigator.vibrate?.(60);
     shot.classList.remove('shake'); void shot.offsetWidth; shot.classList.add('shake');
     toast.textContent = msg;
@@ -269,6 +278,7 @@
   function correct() {
     const s = stage.steps[si];
     busy = true;
+    $('swipe').style.display = 'none';
     const version = playVersion;
     const later = (fn, ms) => setTimeout(() => { if (version === playVersion) fn(); }, ms);
     toast.classList.remove('on');
@@ -278,7 +288,6 @@
       later(() => { if (s.after) { img.src = src(s.after); target.className = ''; } }, 350);
       later(go, s.after ? 1200 : 550);
     } else if (s.type === 'scroll') {
-      $('swipe').style.display = 'none';
       later(go, 350);
     } else go();
   }
@@ -290,10 +299,7 @@
   }
 
   function clear() {
-    const n = misses === 0 ? 3 : misses <= 2 ? 2 : 1;
-    saveBest(stage.id, n);
-    $('stars').textContent = starText(n);
-    $('result').textContent = misses === 0 ? 'ノーミス！完璧です。' : `ミス ${misses}回。もう一度やると覚えやすいです。`;
+    saveClear(stage.id);
     const warns = stage.steps.filter(s => s.warn);
     $('review').innerHTML = warns.map(s => `<li>${s.warn}</li>`).join('');
     $('reviewTitle').style.display = warns.length ? '' : 'none';
@@ -321,10 +327,19 @@
     down = null;
     const s = stage.steps[si], r = shot.getBoundingClientRect();
     const px = (e.clientX - r.left) / r.width * 100, py = (e.clientY - r.top) / r.height * 100;
-    if (s.type === 'scroll') return moved < 10 && miss('タップではなく、上にスワイプしてスクロール', px, py);
-    if (s.type !== 'tap' || Math.abs(dx) > 14 || Math.abs(dy) > 14) return;
     const x = px * 5.9, y = py * 12.8;
     const inside = ([rx, ry, rw, rh]) => x >= rx && x <= rx + rw && y >= ry && y <= ry + rh;
+    if (s.type === 'scroll') {
+      if (moved >= 10 || Math.abs(dx) > 14 || Math.abs(dy) > 14) return;
+      const rect = activeRect();
+      if (rect && inside(rect)) {
+        // 今の画像と枠を保ったまま、直後のtapの正解処理(after・warn)へ進む。
+        si++;
+        return correct();
+      }
+      return miss('タップではなく、上にスワイプしてスクロール', px, py);
+    }
+    if (s.type !== 'tap' || Math.abs(dx) > 14 || Math.abs(dy) > 14) return;
     if (inside(s.rect)) return correct();
     const trap = (s.traps || []).find(t => inside(t.rect));
     miss(trap ? trap.msg : 'そこじゃないよ', px, py);

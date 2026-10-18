@@ -26,21 +26,109 @@ const timers = new Map(), images = [], saved = new Map(); let timerId = 0;
 const ctx = vm.createContext({
   document: { getElementById: node, querySelectorAll: () => ['home', 'play', 'clear'].map(node) },
   window: { scrollTo() {}, addEventListener() {} }, navigator: {},
-  localStorage: { getItem: k => saved.get(k), setItem: (k, v) => saved.set(k, v) },
+  localStorage: { getItem: k => saved.get(k), setItem: (k, v) => saved.set(k, String(v)) },
   Image: class { set src(value) { images.push(value); } },
   ResizeObserver: class { observe() {} },
-  setTimeout: fn => { timers.set(++timerId, fn); return timerId; }, clearTimeout: id => timers.delete(id),
+  setTimeout: (fn, ms) => { timers.set(++timerId, { fn, ms }); return timerId; }, clearTimeout: id => timers.delete(id),
 });
 vm.runInContext(fs.readFileSync(path.join(root, 'stages.js'), 'utf8'), ctx);
 vm.runInContext(page.match(/<script>([\s\S]*?)<\/script>/)[1], ctx);
 const run = code => vm.runInContext(code, ctx);
-function flush() { const callbacks = [...timers.values()]; timers.clear(); callbacks.forEach(fn => fn()); }
+function flush(limit = Infinity) {
+  const callbacks = [...timers.entries()].filter(([, t]) => t.ms <= limit);
+  callbacks.forEach(([id]) => timers.delete(id)); callbacks.forEach(([, t]) => t.fn());
+}
 function clickCard(dataset) { node('card').events.click({ target: { dataset, classList: { add() {} } } }); }
 function tap(r) {
   const e = { clientX: (r[0] + r[2] / 2) / 2, clientY: (r[1] + r[3] / 2) / 2, target: node('shot') };
   node('shot').events.pointerdown(e); node('shot').events.pointerup(e);
 }
 assert.match(node('stages').innerHTML, /stage-number/);
+assert.match(node('stages').innerHTML, /まだクリアしていません/);
+// HTML自体にも採点表示を残さない。最小DOMは存在しないIDも作れるため別途検査する。
+assert.doesNotMatch(page, /id="(?:missN|stars|result)"|[★☆]|ミス\s|ノーミス/);
+for (const stars of [1, 2, 3]) {
+  saved.set('stars-safari', String(stars)); run('home()');
+  assert.match(node('stages').innerHTML, /クリア済み ✓/);
+  assert.doesNotMatch(node('stages').innerHTML, /[★☆]/);
+}
+saved.clear(); run('home()');
+
+function openStep(stageIndex, stepIndex) { run(`start(${stageIndex}); si = ${stepIndex}; step()`); }
+function frame(k) {
+  run(`scrollBy(((${k} - 1) / (stage.steps[si].seq[1] - 1) - scrollP) * shot.clientHeight * (stage.steps[si].len || 1.5))`);
+}
+function targetAt(s, next, k) { return [next.rect[0], s.target.ys[k - 1], next.rect[2], next.rect[3]]; }
+function assertGuide(rect) {
+  assert.ok(node('target').classList.contains('hint'));
+  assert.equal(node('target').style.left, rect[0] / 5.9 + '%');
+  assert.equal(node('target').style.top, rect[1] / 12.8 + '%');
+  assert.equal(node('target').style.width, rect[2] / 5.9 + '%');
+  assert.equal(node('target').style.height, rect[3] / 12.8 + '%');
+}
+openStep(0, 1); assertGuide(run('stage.steps[si].rect'));
+// guideの無いステージは、従来どおり2回の誤タップでヒントを出す。
+openStep(2, 4); assert.ok(!node('target').classList.contains('hint'));
+tap([580, 1200, 0, 0]); assert.ok(!node('target').classList.contains('hint'));
+tap([580, 1200, 0, 0]); assertGuide(run('stage.steps[si].rect'));
+assert.ok(node('toast').classList.contains('on'));
+flush();
+
+for (const stepIndex of [2, 5, 7]) {
+  openStep(0, stepIndex);
+  const s = run('stage.steps[si]'), next = run('stage.steps[si + 1]');
+  if (s.target.from > 1) {
+    frame(s.target.from - 1);
+    assert.ok(!node('target').classList.contains('hint'));
+    tap(targetAt(s, next, s.target.from - 1));
+    assert.equal(run('si'), stepIndex); assert.equal(run('stepMisses'), 1);
+    assert.ok(node('toast').classList.contains('on'));
+  }
+  // 境界コマから最終コマ直前まで、表示コマとガイドの位置が一致する。
+  for (let k = s.target.from; k < s.seq[1]; k++) {
+    frame(k); assertGuide(targetAt(s, next, k));
+    assert.equal(node('img').src, `img/seq/${s.seq[0]}-${String(k).padStart(2, '0')}.jpg`);
+    assert.equal(node('swipe').style.display, 'block');
+  }
+  frame(s.target.from);
+  if (s.target.from > 1) {
+    frame(s.target.from - 1); assert.ok(!node('target').classList.contains('hint'));
+    frame(s.target.from); assertGuide(targetAt(s, next, s.target.from));
+  }
+  tap([580, 1200, 0, 0]); assert.equal(run('si'), stepIndex);
+  const expectedRect = targetAt(s, next, s.target.from);
+  tap(expectedRect);
+  assert.equal(run('si'), stepIndex + 1); assert.equal(run('busy'), true);
+  assert.equal(node('swipe').style.display, 'none');
+  assert.ok(node('target').classList.contains('hit'));
+  assert.equal(node('target').style.top, expectedRect[1] / 12.8 + '%');
+  tap(expectedRect); // 成功演出中の連打では進まない。
+  assert.equal(run('si'), stepIndex + 1);
+  flush(350);
+  if (next.after) assert.equal(node('img').src, `img/${next.after}.jpg`);
+  flush();
+  if (next.warn) {
+    assert.ok(node('modal').classList.contains('on'));
+    assert.equal(node('modalText').textContent, next.warn);
+    assert.equal(run('si'), stepIndex + 1);
+    node('modalOk').onclick();
+  }
+  assert.equal(run('si'), stepIndex + 2);
+}
+// 指を上下に動かして元の位置で離しても、途中タップにはしない。
+openStep(0, 7);
+const drag = { clientX: 150, clientY: 560, target: node('shot') };
+node('shot').events.pointerdown(drag);
+node('shot').events.pointermove({ ...drag, clientY: 520 });
+assert.equal(node('swipe').style.display, 'block');
+node('shot').events.pointermove(drag);
+node('shot').events.pointerup(drag);
+assert.equal(run('si'), 7); assert.equal(run('stepMisses'), 0);
+// 途中タップの成功演出も、中断・再開で無効になる。
+tap([22, 1084, 546, 82]); node('quit').onclick(); run('start(0)'); flush();
+assert.equal(run('si'), 0);
+console.log('PASS scroll target taps, boundaries, guides, drag suppression, and legacy completion');
+
 const count = run('STAGES.length');
 for (let i = 0; i < count; i++) {
   run(`start(${i})`);
@@ -73,15 +161,28 @@ for (let i = 0; i < count; i++) {
       if (s.traps?.length) { tap(s.traps[0].rect); assert.equal(node('toast').textContent, s.traps[0].msg); assert.equal(run('si'), k); }
       tap(s.rect);
     }
-    if (s.type === 'scroll') { run('scrollBy(100000)'); assert.match(node('img').src, /seq\//); }
+    if (s.type === 'scroll') {
+      run('scrollBy(shot.clientHeight * (stage.steps[si].len || 1.5) * .25)');
+      assert.equal(node('swipe').style.display, 'block');
+      run('scrollBy(100000)'); assert.match(node('img').src, /seq\//);
+      assert.equal(node('swipe').style.display, 'none');
+    }
     flush();
     if (s.warn) { assert.ok(node('modal').classList.contains('on')); assert.equal(node('modalText').textContent, s.warn); node('modalOk').onclick(); }
   }
   assert.ok(node('clear').classList.contains('on'));
+  assert.equal(saved.get('cleared-' + run('stage.id')), 'true');
+  assert.equal(saved.has('stars-' + run('stage.id')), false);
   for (const s of steps.filter(s => s.warn)) assert.ok(node('review').innerHTML.includes(s.warn));
   console.log('PASS full playthrough ' + run('stage.id'));
 }
 assert.ok(images.every(src => !src.includes('undefined')));
+run('home()');
+assert.equal((node('stages').innerHTML.match(/クリア済み ✓/g) || []).length, count);
+assert.doesNotMatch(node('stages').innerHTML, /[★☆]|まだクリアしていません/);
+// 保存が使えない環境でも、クリアとホーム表示を続行する。
+run('localStorage.getItem = () => { throw Error("unavailable"); }; localStorage.setItem = () => { throw Error("unavailable"); }; start(1); clear(); home()');
+assert.ok(node('home').classList.contains('on'));
 // タップ成功の待機中にやめて再開しても、前のタイマーが次のゲームを進めない。
 run('start(0); si = 1; step()'); tap(run('stage.steps[si].rect'));
 node('quit').onclick(); run('start(0)'); flush(); assert.equal(run('si'), 0);

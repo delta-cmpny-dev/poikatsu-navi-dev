@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const crypto = require('node:crypto');
 const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'stages.js'), 'utf8');
-const stages = vm.runInNewContext(source + '\nJSON.parse(JSON.stringify(STAGES))');
+const stages = JSON.parse(vm.runInNewContext(source + '\nJSON.stringify(STAGES)'));
 let checks = 0;
 function test(name, fn) {
   try { fn(); checks++; console.log('PASS ' + name); }
@@ -16,11 +16,27 @@ test('unique IDs and requested order', () => {
   assert.equal(new Set(stages.map(s => s.id)).size, stages.length);
   assert.equal(JSON.stringify(stages.map(s => s.id)), JSON.stringify(order));
 });
-test('existing safari and bank definitions remain unchanged', () => {
-  const hashes = { safari: '690edb9b79d034b3ccc574f55e27e14a41397fe6c7522a7dbca4d8d586dfe68e', bank: 'e0ad340ab525c33039c2f14a5e5dfae08d83fbe442ac68dc22583a771130ded2' };
-  for (const [id, hash] of Object.entries(hashes)) {
-    assert.equal(crypto.createHash('sha256').update(JSON.stringify(stages.find(s => s.id === id))).digest('hex'), hash);
-  }
+test('stage 3 onward definitions and source remain unchanged', () => {
+  const hash = value => crypto.createHash('sha256').update(value).digest('hex');
+  assert.equal(hash(JSON.stringify(stages.slice(2))), 'e8191362f162768fd66cb9bae63f878d4b793760a4e53d1883c7e4d42ad4fe0b');
+  assert.equal(hash(source.slice(source.indexOf("    id: 'sites'")).replace(/\r\n/g, '\n')), 'b0ac145a2e2006fa68be0ae8ed536180c2d4fb45d7133634cca0b113966bdbc7');
+});
+test('Safari and preparation enable guides', () => {
+  assert.equal(stages[0].guide, true);
+  assert.equal(stages[1].guide, true);
+});
+test('Safari scroll targets match supplied frame coordinates', () => {
+  const expected = [
+    { from: 16, ys: [746,746,746,746,670,992,847,719,606,532,449,331,208,143,940,1101,1076,1036,1005,976,982,994,989,952,957] },
+    { from: 21, ys: [697,697,697,441,263,191,349,341,329,323,321,319,260,276,160,1079,1024,822,571,1198,1073,956,768,615,513,453,411,362] },
+    { from: 1, ys: [1084,1049,951,905,806,715,677,643,643,615,576,572,572] },
+  ];
+  assert.deepEqual(stages[0].steps.filter(s => s.type === 'scroll').map(s => s.target), expected);
+});
+test('Safari warning assumes up-to-date iOS', () => {
+  const warn = stages[0].steps.find(s => s.after).warn;
+  for (const word of ['すべてのcookieをブロック', 'オフ', '一番下', '詳細', '最新版', 'アップデート', '毎回の確認は不要']) assert.ok(warn.includes(word), word);
+  assert.doesNotMatch(warn, /iOS\s*(17|12)|トラッキングの停止を要求/);
 });
 function rect(r, label) {
   assert.ok(Array.isArray(r) && r.length === 4 && r.every(Number.isFinite), label);
@@ -46,6 +62,15 @@ for (const stage of stages) test(stage.id + ' data and assets', () => {
     if (s.type === 'scroll') {
       assert.ok(Array.isArray(s.seq) && s.seq.length === 2 && typeof s.seq[0] === 'string', label);
       assert.ok(Number.isInteger(s.seq[1]) && s.seq[1] > 0, label);
+      if (s.target) {
+        assert.equal(stage.steps[i + 1]?.type, 'tap', label);
+        assert.ok(Number.isInteger(s.target.from) && s.target.from >= 1 && s.target.from <= s.seq[1], label);
+        assert.equal(s.target.ys.length, s.seq[1], label);
+        for (const y of s.target.ys.slice(s.target.from - 1)) {
+          const [x, , w, h] = stage.steps[i + 1].rect;
+          rect([x, y, w, h], label);
+        }
+      }
     }
     if (s.type === 'quiz') {
       assert.ok(Array.isArray(s.choices) && s.choices.length >= 2, label);
