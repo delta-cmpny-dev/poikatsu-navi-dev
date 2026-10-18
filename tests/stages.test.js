@@ -16,14 +16,13 @@ test('unique IDs and requested order', () => {
   assert.equal(new Set(stages.map(s => s.id)).size, stages.length);
   assert.equal(JSON.stringify(stages.map(s => s.id)), JSON.stringify(order));
 });
-test('stage 3 onward definitions and source remain unchanged', () => {
-  const hash = value => crypto.createHash('sha256').update(value).digest('hex');
-  assert.equal(hash(JSON.stringify(stages.slice(2))), 'e8191362f162768fd66cb9bae63f878d4b793760a4e53d1883c7e4d42ad4fe0b');
-  assert.equal(hash(source.slice(source.indexOf("    id: 'sites'")).replace(/\r\n/g, '\n')), 'b0ac145a2e2006fa68be0ae8ed536180c2d4fb45d7133634cca0b113966bdbc7');
+test('every stage shows guide boxes from the start', () => {
+  for (const s of stages) assert.equal(s.guide, true, s.id);
 });
-test('Safari and preparation enable guides', () => {
-  assert.equal(stages[0].guide, true);
-  assert.equal(stages[1].guide, true);
+test('every scroll followed by a tap accepts a mid-scroll tap', () => {
+  for (const st of stages) st.steps.forEach((s, i) => {
+    if (s.type === 'scroll' && st.steps[i + 1]?.type === 'tap') assert.ok(s.target, st.id + ':' + i);
+  });
 });
 test('Safari scroll targets match supplied frame coordinates', () => {
   const expected = [
@@ -66,7 +65,7 @@ for (const stage of stages) test(stage.id + ' data and assets', () => {
         assert.equal(stage.steps[i + 1]?.type, 'tap', label);
         assert.ok(Number.isInteger(s.target.from) && s.target.from >= 1 && s.target.from <= s.seq[1], label);
         assert.equal(s.target.ys.length, s.seq[1], label);
-        for (const y of s.target.ys.slice(s.target.from - 1)) {
+        for (const y of s.target.ys.slice(s.target.from - 1).filter(y => y != null)) {
           const [x, , w, h] = stage.steps[i + 1].rect;
           rect([x, y, w, h], label);
         }

@@ -2,7 +2,7 @@
 // type: tap=正しい場所をタップ / scroll=指でスクロール / quiz=選択肢 / info=読んで次へ
 // seq: スクロールの場面で使う連続コマ [名前, 枚数](img/seq/名前-01.jpg〜)。len は最後までに必要な指の移動量(画面何枚分か)
 // target: scroll中に押せる項目。fromは表示開始コマ(1始まり)、ysは各コマのy座標。x・幅・高さは直後のtapのrectを使う
-// guide: true のステージは最初から正解の枠を表示する
+// guide: true のステージは最初から正解の枠を表示する(全ステージで有効)
 // traps: 押しがちな間違いの場所と、そのときのひとこと
 // warn: 正解のあとに出す重要ポイント(クリア画面のおさらいにも出る)
 // img / after: img/ 内の拡張子なしの名前。info / quiz の img は省略可
@@ -76,6 +76,7 @@ const STAGES = [
     id: 'sites',
     title: 'ポイントサイトの登録と使い方',
     lead: '同じスマホ・同じブラウザで使おう',
+    guide: true,
     steps: [
       { type: 'info', text: 'ポイントサイトの開き方と登録を覚えよう。', sub: 'よく使うのはハピタスとモッピーです。' },
       { type: 'quiz', text: 'ハピタスは、どこから開く？', sub: '申し込みの経路をそろえます。',
@@ -101,6 +102,7 @@ const STAGES = [
     id: 'points',
     title: 'ポイントの考え方',
     lead: '仮ポイントから確定・現金化まで',
+    guide: true,
     steps: [
       { type: 'info', text: '仮ポイントと確定ポイントの違いを覚えよう。', sub: '申し込みから現金化までには、順番があります。' },
       { type: 'info', img: 'note/profit', card: 'bottom', text: '利益のイメージを見てみよう。', sub: '教材の合計は258,500円。金額は案件や申込時期で変わります。' },
@@ -127,6 +129,7 @@ const STAGES = [
     id: 'passbook',
     title: 'ポイント通帳の見方（ハピタス）',
     lead: '判定中・有効・無効を見分けよう',
+    guide: true,
     steps: [
       { type: 'info', text: '通帳の右側にある判定ステータスを読もう。', sub: '申し込みが記録されたかを確認する場所です。' },
       { type: 'tap', img: 'note/bankbook-1', text: 'マイページの「ポイント通帳」をタップ', rect: [0, 224, 503, 56] },
@@ -150,6 +153,7 @@ const STAGES = [
     id: 'offer',
     title: '案件ページの見方（ハピタス）',
     lead: '2つの期間と、ポイント対象条件',
+    guide: true,
     steps: [
       { type: 'info', text: '2つの期間と、詳しい条件の場所を覚えよう。', sub: '「通帳に載るまで」と「確定まで」は別です。' },
       { type: 'tap', img: 'note/offer-1', text: '「通帳記載の目安」をタップ', sub: '仮ポイントが通帳に載るまでの目安です。', rect: [10, 454, 239, 44] },
@@ -170,6 +174,7 @@ const STAGES = [
     id: 'inquiry',
     title: 'ポイントが反映されないときの問い合わせ',
     lead: '問い合わせ先・タイミング・必要なメール',
+    guide: true,
     steps: [
       { type: 'info', text: '問い合わせる相手と、準備するものを覚えよう。', sub: '判定中にならない・無効になったときの練習です。' },
       { type: 'quiz', text: 'ポイントが付かない。問い合わせ先は？', sub: 'ポイントの調査はポイントサイトが窓口です。',
@@ -196,6 +201,7 @@ const STAGES = [
     id: 'trouble',
     title: '申し込みでつまずいたとき',
     lead: '入力チェックと、途中からの再開',
+    guide: true,
     steps: [
       { type: 'info', text: '止まったときの確認順と再開方法を覚えよう。', sub: 'あわてず、1つずつ確かめます。' },
       { type: 'quiz', text: '「次へ」が押せない。最初に見るのは？', sub: '教材では、サイトの故障より入力漏れが多いとされています。',
@@ -224,6 +230,7 @@ const STAGES = [
     id: 'fx',
     title: '架空のFX案件で落とし穴を予習',
     lead: '○○FXで申し込みから確定まで練習',
+    guide: true,
     steps: [
       { type: 'info', html: fxScreen('申し込みから確定まで'), text: 'FX案件で間違えやすい操作を練習しよう。', sub: 'すべて架空の画面です。申し込みや取引は行われません。' },
       { type: 'tap', html: fxScreen('ポイントサイトの案件', '<p class="fx-badge">新規口座開設 ＋ 取引</p><h3>○○FX</h3><p class="fx-points">○○,000pt</p><p>条件は案件ノートで確認</p>', [{ label: 'ポイントを貯める', rect: [40, 820, 510, 100] }]),
@@ -269,6 +276,7 @@ const STAGES = [
     id: 'bank',
     title: '○○銀行　口座開設',
     lead: '申し込みの流れと、間違えやすいポイント',
+    guide: true,
     steps: [
       { type: 'tap', img: 'bank-99', text: '手順のリンクを選んで「コピー」をタップ', rect: [104, 556, 104, 50],
         traps: [{ rect: [215, 556, 130, 50], msg: '「すべてを選択」ではなく「コピー」' }] },
@@ -276,7 +284,8 @@ const STAGES = [
         choices: [{ label: 'プライベートモード・シークレットモード', msg: 'それは使わないこと！' }, { label: 'ふつうのモード', ok: true }],
         warn: 'ブラウザのプライベートモードやシークレットモードは使わないこと！' },
       { type: 'tap', img: 'bank-270', text: 'リンクを貼り付けたら、青い「→」で開こう', rect: [473, 1018, 105, 150] },
-      { type: 'scroll', img: 'bank-345', seq: ['camp', 32], len: 1.6, text: '下にスクロールして、申し込みボタンを探そう' },
+      { type: 'scroll', img: 'bank-345', seq: ['camp', 32], len: 1.6, text: '下にスクロールして、申し込みボタンを探そう',
+        target: { from: 24, ys: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1094,959,873,811,767,740,650,650,650] } },
       { type: 'tap', img: 'bank-555', text: '「今すぐ口座開設」をタップ', rect: [22, 650, 546, 80] },
       { type: 'tap', img: 'bank-660', text: '「手続開始」をタップ', rect: [296, 1050, 292, 90],
         traps: [{ rect: [0, 1050, 295, 90], msg: 'キャンセルじゃないよ' }] },
@@ -288,7 +297,8 @@ const STAGES = [
         choices: [{ label: '入れる', msg: '入れない！' }, { label: '入れない', ok: true }],
         warn: '預貯金口座への付番申込はチェックを入れない。' },
       { type: 'tap', img: 'bank-5700', text: '認証方式は「スマホ認証方式」を選ぼう', rect: [24, 812, 544, 230] },
-      { type: 'scroll', img: 'bank-5880', seq: ['card', 23], len: 1, text: '下にスクロールして「カードデザイン」を探そう' },
+      { type: 'scroll', img: 'bank-5880', seq: ['card', 23], len: 1, text: '下にスクロールして「カードデザイン」を探そう',
+        target: { from: 14, ys: [null,null,null,null,null,null,null,null,null,null,null,null,null,672,567,505,449,336,null,null,717,540,476] } },
       { type: 'tap', img: 'bank-5880', text: 'カードのデザインを選ぼう。正解はどれ？', rect: [38, 478, 514, 372],
         traps: [{ rect: [38, 210, 514, 236], msg: 'PEANUTSではないよ' }, { rect: [38, 882, 514, 166], msg: 'スタンダードではないよ' }],
         warn: 'カードのデザインは必ず「PlayStation」を選択すること！' },
@@ -296,7 +306,8 @@ const STAGES = [
       { type: 'quiz', img: 'bank-6255', text: 'カードローンなどの欄は、どうする？',
         choices: [{ label: '全て未入力のまま', ok: true }, { label: '全部うめる', msg: 'うめなくてOK' }],
         warn: 'カードローン等は全て未入力のままにしておく。' },
-      { type: 'scroll', img: 'bank-7335', seq: ['conf', 24], len: 1.5, text: '確認画面を下にスクロールして、カードの欄を探そう' },
+      { type: 'scroll', img: 'bank-7335', seq: ['conf', 24], len: 1.5, text: '確認画面を下にスクロールして、カードの欄を探そう',
+        target: { from: 21, ys: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,645,535,438,432] } },
       { type: 'tap', img: 'bank-7335', text: '確認画面です。必ずチェックする場所はどこ？', rect: [36, 432, 518, 350],
         traps: [{ rect: [390, 1050, 200, 90], msg: '決定の前に、確認する場所があるよ' }],
         warn: '確認画面でカードのデザインが「PlayStation」であることを確認。違っていたら修正する。' },

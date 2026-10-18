@@ -239,7 +239,7 @@
     if (s.type === 'tap') return s.rect;
     if (s.type !== 'scroll' || !s.target || stage.steps[si + 1]?.type !== 'tap') return null;
     const frame = scrollFrame(s);
-    if (frame < s.target.from) return null;
+    if (frame < s.target.from || s.target.ys[frame - 1] == null) return null;
     const [x, , w, h] = stage.steps[si + 1].rect;
     return [x, s.target.ys[frame - 1], w, h];
   }

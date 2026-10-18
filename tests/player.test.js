@@ -67,9 +67,8 @@ function assertGuide(rect) {
   assert.equal(node('target').style.height, rect[3] / 12.8 + '%');
 }
 openStep(0, 1); assertGuide(run('stage.steps[si].rect'));
-// guideの無いステージは、従来どおり2回の誤タップでヒントを出す。
-openStep(2, 4); assert.ok(!node('target').classList.contains('hint'));
-tap([580, 1200, 0, 0]); assert.ok(!node('target').classList.contains('hint'));
+// どのステージのタップ画面でも、最初から枠が出る。間違えてもひとことが出る。
+openStep(2, 4); assertGuide(run('stage.steps[si].rect'));
 tap([580, 1200, 0, 0]); assertGuide(run('stage.steps[si].rect'));
 assert.ok(node('toast').classList.contains('on'));
 flush();
