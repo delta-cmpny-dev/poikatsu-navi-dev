@@ -55,6 +55,7 @@ for (const stars of [1, 2, 3]) {
 }
 saved.clear(); run('home()');
 
+const STAGES_SCROLL_TARGETS = JSON.parse(run('JSON.stringify(STAGES[0].steps.map((s, i) => s.target ? i : -1).filter(i => i >= 0))'));
 function openStep(stageIndex, stepIndex) { run(`start(${stageIndex}); si = ${stepIndex}; step()`); }
 function frame(k) {
   run(`scrollBy(((${k} - 1) / (stage.steps[si].seq[1] - 1) - scrollP) * shot.clientHeight * (stage.steps[si].len || 1.5))`);
@@ -74,7 +75,7 @@ tap([580, 1200, 0, 0]); assertGuide(run('stage.steps[si].rect'));
 assert.ok(node('toast').classList.contains('on'));
 flush();
 
-for (const stepIndex of [2, 5, 7]) {
+for (const stepIndex of STAGES_SCROLL_TARGETS) {
   openStep(0, stepIndex);
   const s = run('stage.steps[si]'), next = run('stage.steps[si + 1]');
   if (s.target.from > 1) {
@@ -117,14 +118,15 @@ for (const stepIndex of [2, 5, 7]) {
   assert.equal(run('si'), stepIndex + 2);
 }
 // 指を上下に動かして元の位置で離しても、途中タップにはしない。
-openStep(0, 7);
+const histStep = run("STAGES[0].steps.findIndex(s => s.seq && s.seq[0] === 'hist')");
+openStep(0, histStep);
 const drag = { clientX: 150, clientY: 560, target: node('shot') };
 node('shot').events.pointerdown(drag);
 node('shot').events.pointermove({ ...drag, clientY: 520 });
 assert.equal(node('swipe').style.display, 'none'); // この場面は最初からタップ場所が見えている
 node('shot').events.pointermove(drag);
 node('shot').events.pointerup(drag);
-assert.equal(run('si'), 7); assert.equal(run('stepMisses'), 0);
+assert.equal(run('si'), histStep); assert.equal(run('stepMisses'), 0);
 // 途中タップの成功演出も、中断・再開で無効になる。
 tap([22, 1084, 546, 82]); node('quit').onclick(); run('start(0)'); flush();
 assert.equal(run('si'), 0);
