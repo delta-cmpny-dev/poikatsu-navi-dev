@@ -248,6 +248,9 @@
     const pos = plain ? 'mid' : s.card || (s.type === 'info' ? 'mid' : s.type === 'quiz' ? 'bottom' : s.type === 'scroll' ? 'top' : s.rect[1] + s.rect[3] / 2 > 640 ? 'top' : 'bottom');
     // 画面の上に出す説明・クイズのカードは小さくして、サイトをなるべく隠さない
     card.className = pos + (!plain && (s.type === 'info' || s.type === 'quiz') ? ' compact' : '');
+    // cardAt: 画面のこの高さ(590x1280の座標)に説明を出す。空いている場所に置くとき用
+    card.style.top = s.cardAt != null ? s.cardAt / 12.8 + '%' : '';
+    if (s.cardAt != null) card.classList.remove('top', 'bottom', 'mid');
     const label = { tap: 'タップしよう', scroll: 'スクロールしよう', quiz: 'クイズ', info: 'ポイント' }[s.type];
     let html = `<small>${no} / ${total}　${label}</small><b>${s.text}</b>` + (s.sub ? `<p>${s.sub}</p>` : '');
     if (s.type === 'quiz') html += `<div class="btns">${s.choices.map((c, i) => `<button data-c="${i}">${c.label}</button>`).join('')}</div>`;

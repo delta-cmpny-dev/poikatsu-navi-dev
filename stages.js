@@ -4,6 +4,7 @@
 // target: scroll中に押せる項目。fromは表示開始コマ(1始まり)、ysは各コマのy座標。x・幅・高さは直後のtapのrectを使う
 // guide: true のステージは最初から正解の枠を表示する(全ステージで有効)
 // traps: 押しがちな間違いの場所と、そのときのひとこと
+// cardAt: 説明を出す高さ(590x1280の座標)。card より優先
 // alts: rect のほかにも正解にするタップ場所 [[x, y, 幅, 高さ], ...](枠は marks で出す)
 // marks: 確認してほしい場所に出す枠(押す場所ではない) [[x, y, 幅, 高さ], ...]
 // guide: false をステップに付けると、そのステップだけ最初の枠を出さない
@@ -139,7 +140,7 @@ const STAGES = [
         review: 'ポイントサイトはアプリでは絶対開かない！ Safariから開く癖をつけよう。' },
       { type: 'tap', img: 'bf-search', text: 'ブラウザの検索欄にペーストしよう', rect: [26, 72, 538, 66] },
       { type: 'tap', img: 'bf-paste', text: 'ブラウザの検索欄にペーストしよう', rect: [42, 150, 112, 54] },
-      { type: 'tap', img: 'bf-go', card: 'top', text: 'どちらでも良いのでタップしよう', rect: [40, 345, 420, 75],
+      { type: 'tap', img: 'bf-go', cardAt: 560, text: 'どちらでも良いのでタップしよう', rect: [40, 345, 420, 75],
         alts: [[474, 1018, 104, 152]], marks: [[474, 1018, 104, 152]] },
       { type: 'info', img: 'bf-site', card: 'bottom', next: 'OK', text: 'スクールで案内された手順で進めていこう' },
     ],
