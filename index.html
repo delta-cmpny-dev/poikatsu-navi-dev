@@ -348,7 +348,8 @@
   // スクショへの操作: 動かさずに離せばタップ、上に動かせばスワイプ
   let down = null;
   shot.addEventListener('pointerdown', e => {
-    if (busy || e.target.closest('#card')) return;
+    // スクロールの場面は、説明カードの上から指を置いてもスクロールできるようにする
+    if (busy || (e.target.closest('#card') && stage.steps[si].type !== 'scroll')) return;
     down = { x: e.clientX, y: e.clientY, lastY: e.clientY, moved: 0 };
     shot.setPointerCapture?.(e.pointerId);
   });
