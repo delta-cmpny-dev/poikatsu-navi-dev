@@ -56,7 +56,8 @@ const STAGES = [
         target: { from: 27, ys: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1185,1171,1146,1123,1098,1085,1069,1060,1047,1040,1030,1024,1019,1016,1012,1011,1043,1062,1076,1083,1088,1090,1091,1092,1092] } },
       { type: 'tap', img: 'safari-ck-195', text: '「詳細」をタップ', rect: [24, 1092, 542, 80] },
       { type: 'tap', img: 'safari-ck-225', after: 'safari-ck-345', text: '「すべてのCookieをブロック」をオフにしよう', rect: [30, 495, 538, 78] },
-      { type: 'info', img: 'safari-ck-345', card: 'top', text: '完了！', sub: '「すべてのCookieをブロック」がオフになりました。これでSafariの設定は終わりです。' },
+      { type: 'info', img: 'safari-ck-345', card: 'top', text: '完了！', sub: '「すべてのCookieをブロック」がオフになりました。これでSafariの設定は終わりです。',
+        warn: 'iOSは必ず最新であること！\nアップデートは確実にしておこう！！' },
     ],
   },
   {
