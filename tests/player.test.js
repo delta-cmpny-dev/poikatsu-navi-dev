@@ -151,14 +151,21 @@ for (let i = 0; i < count; i++) {
       assert.match(node('video').src, new RegExp('video/' + s.video + '\.mp4$'));
       node('playerClose').onclick(); assert.ok(!node('player').classList.contains('on'));
     }
-    if (s.type === 'info') clickCard({ next: '' });
+    if (s.type === 'info') { if (s.next) assert.match(node('card').innerHTML, new RegExp('>' + s.next + '<')); clickCard({ next: '' }); }
     if (s.type === 'quiz') {
       const wrong = s.choices.findIndex(c => !c.ok);
       clickCard({ c: String(wrong) }); assert.equal(run('si'), k);
       clickCard({ c: String(s.choices.findIndex(c => c.ok)) });
     }
     if (s.type === 'tap') {
-      if (s.traps?.length) { tap(s.traps[0].rect); assert.equal(node('toast').textContent, s.traps[0].msg); assert.equal(run('si'), k); }
+      if (s.traps?.length) {
+        const tr = s.traps[0]; tap(tr.rect); assert.equal(run('si'), k);
+        if (tr.alert) {
+          // アプリを押すと、重要ポイントが出て、閉じても進まない。
+          assert.ok(node('modal').classList.contains('on')); assert.equal(node('modalText').textContent, tr.alert);
+          node('modalOk').onclick(); assert.ok(!node('modal').classList.contains('on')); assert.equal(run('si'), k);
+        } else assert.equal(node('toast').textContent, tr.msg);
+      }
       tap(s.rect);
     }
     if (s.type === 'scroll') {

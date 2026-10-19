@@ -215,6 +215,7 @@
     return [no, total];
   }
 
+  let alerting = false;
   function step() {
     const s = stage.steps[si];
     busy = false; stepMisses = 0; scrollP = 0;
@@ -242,7 +243,7 @@
     const label = { tap: 'タップしよう', scroll: 'スクロールしよう', quiz: 'クイズ', info: 'ポイント' }[s.type];
     let html = `<small>${no} / ${total}　${label}</small><b>${s.text}</b>` + (s.sub ? `<p>${s.sub}</p>` : '');
     if (s.type === 'quiz') html += `<div class="btns">${s.choices.map((c, i) => `<button data-c="${i}">${c.label}</button>`).join('')}</div>`;
-    if (s.type === 'info') html += `<div class="btns">${s.video ? '<button class="video-btn" data-video>▶ 手順動画を見る</button>' : ''}<button data-next>次へ</button></div>`;
+    if (s.type === 'info') html += `<div class="btns">${s.video ? '<button class="video-btn" data-video>▶ 手順動画を見る</button>' : ''}<button data-next>${s.next || '次へ'}</button></div>`;
     card.innerHTML = html;
     card.scrollTop = 0;
   }
@@ -261,7 +262,7 @@
 
   function updateTarget() {
     const rect = activeRect();
-    target.className = rect && stage.guide ? 'hint' : '';
+    target.className = rect && stage.guide && stage.steps[si].guide !== false ? 'hint' : '';
     // スクロールの場面: タップする場所が見えたら、スクロールを促す指マークは消す
     if (stage.steps[si].type === 'scroll' && !busy) $('swipe').style.display = rect ? 'none' : 'block';
     if (rect) {
@@ -317,8 +318,9 @@
 
   function clear() {
     saveClear(stage.id);
-    const warns = stage.steps.filter(s => s.warn);
-    $('review').innerHTML = warns.map(s => `<li>${s.warn}</li>`).join('');
+    // おさらい: 重要ポイント(warn)と、まとめ用の文(review)を順に並べる
+    const warns = stage.steps.flatMap(s => [s.review, s.warn].filter(Boolean));
+    $('review').innerHTML = warns.map(w => `<li>${w}</li>`).join('');
     $('reviewTitle').style.display = warns.length ? '' : 'none';
     $('next').style.display = STAGES.indexOf(stage) < STAGES.length - 1 ? '' : 'none';
     show('clear');
@@ -359,6 +361,8 @@
     if (s.type !== 'tap' || Math.abs(dx) > 14 || Math.abs(dy) > 14) return;
     if (inside(s.rect)) return correct();
     const trap = (s.traps || []).find(t => inside(t.rect));
+    // alert付きの間違いは、トーストではなく重要ポイントとして大きく見せる(進まない)
+    if (trap?.alert) { alerting = true; $('modalText').textContent = trap.alert; $('modal').classList.add('on'); return; }
     miss(trap ? trap.msg : 'そこじゃないよ', px, py);
   });
   shot.addEventListener('wheel', e => { if (!busy && stage.steps[si].type === 'scroll') scrollBy(e.deltaY); });
@@ -376,7 +380,7 @@
   });
 
   $('stages').addEventListener('click', e => { const b = e.target.closest('.stage'); if (b) start(Number(b.dataset.i)); });
-  $('modalOk').onclick = advance;
+  $('modalOk').onclick = () => { if (alerting) { alerting = false; $('modal').classList.remove('on'); } else advance(); };
   // 手順動画: 注釈入りの動画をアプリ内で再生する
   function openVideo(name) {
     const v = $('video');

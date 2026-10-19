@@ -5,6 +5,9 @@
 // guide: true のステージは最初から正解の枠を表示する(全ステージで有効)
 // traps: 押しがちな間違いの場所と、そのときのひとこと
 // marks: 確認してほしい場所に出す枠(押す場所ではない) [[x, y, 幅, 高さ], ...]
+// guide: false をステップに付けると、そのステップだけ最初の枠を出さない
+// traps[].alert: 間違えたときに、トーストではなく重要ポイントとして出す文(進まない)
+// next: info の「次へ」ボタンの文言 / review: クリア画面のおさらいにだけ出す文
 // warn: 正解のあとに出す重要ポイント(クリア画面のおさらいにも出る)
 // img / after: img/ 内の拡張子なしの名前。info / quiz の img は省略可
 // html: 画像の代わりに表示する信頼済みの静的HTML(590x1280)。外部入力を入れない
@@ -52,6 +55,25 @@ const STAGES = [
       { type: 'tap', img: 'safari-ck-195', text: '「詳細」をタップ', rect: [24, 1092, 542, 80] },
       { type: 'tap', img: 'safari-ck-225', after: 'safari-ck-345', text: '「すべてのCookieをブロック」をオフにしよう', rect: [30, 495, 538, 78] },
       { type: 'info', img: 'safari-ck-345', card: 'top', text: '完了！', sub: '「すべてのCookieをブロック」がオフになりました。これでSafariの設定は終わりです。' },
+    ],
+  },
+  {
+    id: 'passbook',
+    title: 'ポイント通帳の見方',
+    lead: 'ハピタスで「有効」「無効」を見分けよう',
+    guide: true,
+    steps: [
+      { type: 'tap', img: 'hapitas-home', guide: false, text: 'ポイントサイト「ハピタス」を開こう', rect: [445, 98, 110, 132],
+        traps: [{ rect: [309, 98, 110, 132], alert: 'ポイントサイトはアプリでは絶対開かない！　※Safariから開く癖をつけよう' }],
+        review: 'ポイントサイトはアプリでは絶対開かない！ Safariから開く癖をつけよう。' },
+      { type: 'tap', img: 'hapitas-top', text: 'マイページを開こう', rect: [100, 1058, 92, 84] },
+      { type: 'tap', img: 'hapitas-menu', text: 'ポイント通帳を開こう', rect: [12, 418, 475, 70] },
+      { type: 'info', img: 'hapitas-valid', card: 'bottom', next: '理解した', marks: [[160, 352, 140, 62]],
+        text: '有効：ポイント獲得条件を達成し、ハピタスから承認された時のステータスです。',
+        review: '有効：ポイント獲得条件を達成し、ハピタスから承認された時のステータス。' },
+      { type: 'info', img: 'hapitas-invalid', card: 'bottom', next: '理解した', marks: [[298, 352, 140, 62]],
+        text: '無効：何らかの理由でポイントが却下された場合のステータスです。',
+        review: '無効：何らかの理由でポイントが却下された場合のステータス。' },
     ],
   },
 ];

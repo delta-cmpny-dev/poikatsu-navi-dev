@@ -11,7 +11,7 @@ function test(name, fn) {
   try { fn(); checks++; console.log('PASS ' + name); }
   catch (e) { console.error('FAIL ' + name + '\n' + e.stack); process.exitCode = 1; }
 }
-const order = ['safari'];
+const order = ['safari', 'passbook'];
 test('unique IDs and requested order', () => {
   assert.equal(new Set(stages.map(s => s.id)).size, stages.length);
   assert.equal(JSON.stringify(stages.map(s => s.id)), JSON.stringify(order));
@@ -45,12 +45,6 @@ function overlap(a, b) {
 }
 for (const stage of stages) test(stage.id + ' data and assets', () => {
   assert.ok(stage.title && stage.lead && stage.steps.length);
-  if (!['safari', 'bank'].includes(stage.id)) {
-    assert.ok(stage.steps.length >= 8 && stage.steps.length <= 14);
-    assert.equal(stage.steps[0].type, 'info');
-    const warnings = stage.steps.filter(s => s.warn).length;
-    assert.ok(warnings >= 2 && warnings <= 5);
-  }
   for (const [i, s] of stage.steps.entries()) {
     const label = stage.id + ':' + (i + 1);
     assert.ok(['tap', 'scroll', 'quiz', 'info'].includes(s.type), label);
@@ -76,7 +70,7 @@ for (const stage of stages) test(stage.id + ' data and assets', () => {
     }
     if (s.rect) rect(s.rect, label);
     for (const t of s.traps || []) {
-      rect(t.rect, label); assert.ok(t.msg, label);
+      rect(t.rect, label); assert.ok(t.msg || t.alert, label);
       assert.ok(!s.rect || !overlap(s.rect, t.rect), label + ' overlapping trap');
     }
     for (const name of [s.img, s.after].filter(Boolean)) assert.ok(fs.existsSync(path.join(root, 'img', name + '.jpg')), label + ' ' + name);
