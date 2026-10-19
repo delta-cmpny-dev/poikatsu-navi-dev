@@ -266,7 +266,7 @@
     layers.forEach(e => e.style.visibility = 'hidden');
     const reveal = () => { if (stage.steps[si] === s) layers.forEach(e => e.style.visibility = ''); };
     if (img.hidden || !img.src || !img.decode) reveal();
-    else img.decode().then(reveal, reveal);
+    else { img.decode().then(reveal, reveal); setTimeout(reveal, 700); } // decode が返らない環境でも必ず出す
   }
 
   // 表示画像・枠・タップ判定で同じコマ番号(1始まり)を使う。
