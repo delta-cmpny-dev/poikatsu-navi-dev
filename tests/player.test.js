@@ -118,17 +118,17 @@ for (const stepIndex of STAGES_SCROLL_TARGETS) {
   assert.equal(run('si'), stepIndex + 2);
 }
 // 指を上下に動かして元の位置で離しても、途中タップにはしない。
-const histStep = run("STAGES[0].steps.findIndex(s => s.seq && s.seq[0] === 'hist')");
-openStep(0, histStep);
+const dragStep = STAGES_SCROLL_TARGETS[0];
+openStep(0, dragStep);
 const drag = { clientX: 150, clientY: 560, target: node('shot') };
 node('shot').events.pointerdown(drag);
 node('shot').events.pointermove({ ...drag, clientY: 520 });
-assert.equal(node('swipe').style.display, 'none'); // この場面は最初からタップ場所が見えている
 node('shot').events.pointermove(drag);
 node('shot').events.pointerup(drag);
-assert.equal(run('si'), histStep); assert.equal(run('stepMisses'), 0);
+assert.equal(run('si'), dragStep); assert.equal(run('stepMisses'), 0);
 // 途中タップの成功演出も、中断・再開で無効になる。
-tap([22, 1084, 546, 82]); node('quit').onclick(); run('start(0)'); flush();
+const dragS = run(`stage.steps[${dragStep}]`), dragNext = run(`stage.steps[${dragStep + 1}]`);
+frame(dragS.target.from); tap(targetAt(dragS, dragNext, dragS.target.from)); node('quit').onclick(); run('start(0)'); flush();
 assert.equal(run('si'), 0);
 console.log('PASS scroll target taps, boundaries, guides, drag suppression, and legacy completion');
 
