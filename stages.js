@@ -85,7 +85,7 @@ const STAGES = [
       { type: 'tap', img: 'moppy-home', guide: false, text: 'ポイントサイト「moppy」を開こう', rect: [445, 98, 110, 132],
         traps: [{ rect: [173, 98, 110, 132], alert: 'ポイントサイトはアプリでは絶対開かない！　※Safariから開く癖をつけよう' }],
         review: 'ポイントサイトはアプリでは絶対開かない！ Safariから開く癖をつけよう。' },
-      { type: 'tap', img: 'moppy-top', text: '左上の「三」を開こう', rect: [22, 175, 64, 64] },
+      { type: 'tap', img: 'moppy-top', text: '左上の横3本線を開こう', rect: [22, 175, 64, 64] },
       { type: 'tap', img: 'moppy-menu', text: 'マイページを開こう', rect: [33, 838, 100, 132] },
       { type: 'scroll', img: 'moppy-menu', seq: ['moppymp', 43], len: 1.4, text: '下にスクロールしよう' },
       { type: 'info', img: 'moppy-ok', card: 'bottom', next: '理解した', marks: [[174, 419, 113, 60]],
