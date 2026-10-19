@@ -32,7 +32,8 @@ const ctx = vm.createContext({
   setTimeout: (fn, ms) => { timers.set(++timerId, { fn, ms }); return timerId; }, clearTimeout: id => timers.delete(id),
 });
 vm.runInContext(fs.readFileSync(path.join(root, 'stages.js'), 'utf8'), ctx);
-vm.runInContext(page.match(/<script>([\s\S]*?)<\/script>/)[1], ctx);
+// 1つ目の<script>は stages.js の読み込み用。本体は一番長い<script>
+vm.runInContext([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).sort((x, y) => y.length - x.length)[0], ctx);
 const run = code => vm.runInContext(code, ctx);
 function flush(limit = Infinity) {
   const callbacks = [...timers.entries()].filter(([, t]) => t.ms <= limit);

@@ -161,7 +161,8 @@
 <div id="player"><video id="video" controls playsinline preload="none"></video><button id="playerClose">閉じて練習に戻る</button></div>
 <div id="modal"><div><em>⚠️ 重要ポイント</em><p id="modalText"></p><button id="modalOk">わかった</button></div></div>
 
-<script src="stages.js"></script>
+<!-- ステージの中身は更新が多いので、毎回最新を読む(スマホのキャッシュ対策) -->
+<script>document.write('<script src="stages.js?t=' + Date.now() + '"><\/script>');</script>
 <script>
   const $ = id => document.getElementById(id);
   const shot = $('shot'), img = $('img'), scene = $('scene'), target = $('target'), card = $('card'), toast = $('toast');
