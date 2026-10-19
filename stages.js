@@ -65,6 +65,23 @@ const STAGES = [
     ],
   },
   {
+    id: 'tracking',
+    title: '準備編Ⅱ　トラッキング設定',
+    lead: 'アプリからのトラッキング要求を許可しておく設定',
+    guide: true,
+    steps: [
+      { type: 'tap', img: 'tr-home', text: '「設定」アプリを開こう', rect: [42, 100, 98, 98] },
+      { type: 'scroll', img: 'tr-top', seq: ['trset', 47], len: 1.6, text: '下にスクロールして「プライバシーとセキュリティ」を探してタップしよう',
+        target: { from: 36, ys: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1083,1010,949,912,882,856,805,759,705,668,637,631] } },
+      { type: 'tap', img: 'tr-set', text: '「プライバシーとセキュリティ」をタップ', rect: [22, 632, 548, 46] },
+      { type: 'tap', img: 'tr-priv', text: '「トラッキング」をタップ', rect: [22, 676, 548, 52] },
+      { type: 'tap', img: 'tr-off', after: 'tr-on', text: '「アプリからのトラッキング要求を許可」をオンにしよう', rect: [450, 208, 104, 56],
+        review: '「アプリからのトラッキング要求を許可」はオンにしておく。' },
+      { type: 'info', img: 'tr-on', card: 'bottom', next: '確認した', marks: [[30, 180, 540, 108]],
+        text: '「アプリからのトラッキング要求を許可」がオンになっていることを確認しよう' },
+    ],
+  },
+  {
     id: 'offer-flow',
     title: '案件の進め方（ポイントサイト経由）',
     lead: 'スクールの案内からポイントサイト経由で申し込むまで',
