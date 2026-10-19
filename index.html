@@ -70,12 +70,13 @@
   #shot.up img { transition: transform .45s ease-in, opacity .45s; transform: translateY(-35%); opacity: 0; }
 
   /* 正解の場所(ヒントとして出す枠) */
-  #target { position: absolute; border: 4px solid var(--accent); border-radius: 10px; display: none; pointer-events: none; }
+  /* 枠は指定範囲の外側に描く(中の文字に線が重ならないように) */
+  #target { position: absolute; outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 8px; display: none; pointer-events: none; }
   #target.hint { display: block; animation: pulse 1s ease-in-out infinite; }
   /* 確認してほしい場所の枠(押す場所ではない) */
-  .mark { position: absolute; border: 4px solid var(--accent); border-radius: 10px; pointer-events: none; }
-  #target.hit { display: block; border-color: var(--ok); background: rgba(23, 166, 115, .25); }
-  @keyframes pulse { 50% { box-shadow: 0 0 0 10px rgba(255, 138, 0, .35) } }
+  .mark { position: absolute; outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 8px; pointer-events: none; }
+  #target.hit { display: block; outline-color: var(--ok); background: rgba(23, 166, 115, .25); }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 12px rgba(255, 138, 0, .3) } }
   /* 上にスワイプの案内 */
   #swipe { position: absolute; left: 50%; top: 62%; font-size: 54px; margin-left: -27px; display: none; pointer-events: none; animation: swipe 1.3s ease-in-out infinite; }
   @keyframes swipe { 0% { transform: translateY(40px); opacity: 0 } 30% { opacity: 1 } 100% { transform: translateY(-110px); opacity: 0 } }
@@ -253,6 +254,12 @@
     if (s.type === 'info') html += `<div class="btns">${s.video ? '<button class="video-btn" data-video>▶ 手順動画を見る</button>' : ''}<button data-next>${s.next || '次へ'}</button></div>`;
     card.innerHTML = html;
     card.scrollTop = 0;
+    // 新しい画面の画像が表示できるまで、説明と枠を隠す(前の画面の上に枠が浮いて見えないように)
+    const layers = [card, target, $('marks')];
+    layers.forEach(e => e.style.visibility = 'hidden');
+    const reveal = () => { if (stage.steps[si] === s) layers.forEach(e => e.style.visibility = ''); };
+    if (img.hidden || !img.src || !img.decode) reveal();
+    else img.decode().then(reveal, reveal);
   }
 
   // 表示画像・枠・タップ判定で同じコマ番号(1始まり)を使う。

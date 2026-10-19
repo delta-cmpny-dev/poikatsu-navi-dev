@@ -102,7 +102,7 @@ const STAGES = [
     lead: 'スクールの案内からポイントサイト経由で申し込むまで',
     guide: true,
     steps: [
-      { type: 'info', img: 'wt-school', card: 'bottom', marks: [[20, 366, 136, 34], [20, 766, 136, 34], [44, 910, 120, 36]],
+      { type: 'info', img: 'wt-school', card: 'bottom', marks: [[27, 373, 125, 21], [27, 765, 125, 21], [48, 916, 125, 21]],
         text: 'スクールで案内された案件から、ポイントサイト経由であることを確認しよう',
         review: 'スクールで案内された案件は、ポイントサイト経由であることを確認する。' },
       { type: 'tap', img: 'wt-home', guide: false, text: 'ポイントサイト「moppy」を開こう', rect: [445, 98, 110, 132],
@@ -116,7 +116,7 @@ const STAGES = [
       { type: 'info', img: 'wt-offer', card: 'bottom', next: '確認した', marks: [[400, 560, 168, 60]],
         text: 'スクールで案内された獲得ポイントと同じことを確認しよう',
         review: '獲得ポイントが、スクールの案内と同じことを確認する。' },
-      { type: 'tap', img: 'wt-offer', text: '「POINT GET!」からWEBサイトに移動しよう', rect: [124, 648, 444, 106] },
+      { type: 'tap', img: 'wt-offer', text: '「POINT GET!」からWEBサイトに移動しよう', rect: [125, 652, 442, 102] },
       { type: 'info', img: 'wt-site', card: 'bottom', next: 'OK', text: 'スクールで案内された手順で進めていこう' },
       { type: 'quiz', img: 'wt-site', text: '超重要ポイントクイズ　作業中は別のページへ移動したり、他のアプリを開いても大丈夫？',
         choices: [{ label: '大丈夫', msg: '別作業は絶対ダメ！' }, { label: '別作業は絶対ダメ', ok: true }],
