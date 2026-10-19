@@ -59,7 +59,7 @@ const STAGES = [
   },
   {
     id: 'passbook',
-    title: 'ポイント通帳の見方',
+    title: 'ポイント通帳の見方（ハピタス版）',
     lead: 'ハピタスで「有効」「無効」を見分けよう',
     guide: true,
     steps: [
