@@ -140,7 +140,7 @@ const STAGES = [
         review: 'ポイントサイトはアプリでは絶対開かない！ Safariから開く癖をつけよう。' },
       { type: 'tap', img: 'bf-search', text: 'ブラウザの検索欄にペーストしよう', rect: [26, 72, 538, 66] },
       { type: 'tap', img: 'bf-paste', text: 'ブラウザの検索欄にペーストしよう', rect: [42, 150, 112, 54] },
-      { type: 'tap', img: 'bf-go', cardAt: 560, text: 'どちらでも良いのでタップしよう', rect: [40, 345, 420, 75],
+      { type: 'tap', img: 'bf-go', cardAt: 560, text: '「URL」と「enter」どちらでもいいのでタップしてページを開こう', rect: [40, 345, 420, 75],
         alts: [[474, 1018, 104, 152]], marks: [[474, 1018, 104, 152]] },
       { type: 'info', img: 'bf-site', card: 'bottom', next: 'OK', text: 'スクールで案内された手順で進めていこう' },
     ],
