@@ -373,7 +373,7 @@
       return miss('タップではなく、上にスワイプしてスクロール', px, py);
     }
     if (s.type !== 'tap' || Math.abs(dx) > 14 || Math.abs(dy) > 14) return;
-    if (inside(s.rect)) return correct();
+    if (inside(s.rect) || (s.alts || []).some(inside)) return correct(); // alts: ほかにも正解の場所がある
     const trap = (s.traps || []).find(t => inside(t.rect));
     // alert付きの間違いは、トーストではなく重要ポイントとして大きく見せる(進まない)
     if (trap?.alert) { alerting = true; $('modalText').textContent = trap.alert; $('modal').classList.add('on'); return; }

@@ -4,6 +4,7 @@
 // target: scroll中に押せる項目。fromは表示開始コマ(1始まり)、ysは各コマのy座標。x・幅・高さは直後のtapのrectを使う
 // guide: true のステージは最初から正解の枠を表示する(全ステージで有効)
 // traps: 押しがちな間違いの場所と、そのときのひとこと
+// alts: rect のほかにも正解にするタップ場所 [[x, y, 幅, 高さ], ...](枠は marks で出す)
 // marks: 確認してほしい場所に出す枠(押す場所ではない) [[x, y, 幅, 高さ], ...]
 // guide: false をステップに付けると、そのステップだけ最初の枠を出さない
 // traps[].alert: 間違えたときに、トーストではなく重要ポイントとして出す文(進まない)
@@ -121,6 +122,26 @@ const STAGES = [
       { type: 'quiz', img: 'wt-site', text: '超重要ポイントクイズ　作業中は別のページへ移動したり、他のアプリを開いても大丈夫？',
         choices: [{ label: '大丈夫', msg: '別作業は絶対ダメ！' }, { label: '別作業は絶対ダメ', ok: true }],
         warn: '別作業は絶対ダメ！最悪の場合、ポイントが無効になる。' },
+    ],
+  },
+  {
+    id: 'browser-flow',
+    title: '案件の進め方（ブラウザ経由）',
+    lead: 'スクールの案内のURLをSafariで開くまで',
+    guide: true,
+    steps: [
+      { type: 'info', img: 'bf-school', card: 'bottom', marks: [[324, 685, 190, 24]],
+        text: 'スクールで案内された案件から、ブラウザ経由であることを確認しよう',
+        review: 'スクールで案内された案件は、ブラウザ経由であることを確認する。' },
+      { type: 'tap', img: 'bf-copy', text: 'URLを選択し、コピーしよう', rect: [100, 624, 116, 62] },
+      { type: 'tap', img: 'bf-home', guide: false, text: 'ブラウザを開こう', rect: [445, 98, 110, 132],
+        traps: [{ rect: [173, 98, 110, 132], alert: 'ポイントサイトはアプリでは絶対開かない！　※Safariから開く癖をつけよう' }, { rect: [309, 98, 110, 132], alert: 'ポイントサイトはアプリでは絶対開かない！　※Safariから開く癖をつけよう' }],
+        review: 'ポイントサイトはアプリでは絶対開かない！ Safariから開く癖をつけよう。' },
+      { type: 'tap', img: 'bf-search', text: 'ブラウザの検索欄にペーストしよう', rect: [26, 72, 538, 66] },
+      { type: 'tap', img: 'bf-paste', text: 'ブラウザの検索欄にペーストしよう', rect: [42, 150, 112, 54] },
+      { type: 'tap', img: 'bf-go', card: 'top', text: 'どちらでも良いのでタップしよう', rect: [40, 345, 420, 75],
+        alts: [[474, 1018, 104, 152]], marks: [[474, 1018, 104, 152]] },
+      { type: 'info', img: 'bf-site', card: 'bottom', next: 'OK', text: 'スクールで案内された手順で進めていこう' },
     ],
   },
 ];
