@@ -25,7 +25,7 @@ function node(id) {
 const timers = new Map(), images = [], saved = new Map(); let timerId = 0;
 const ctx = vm.createContext({
   document: { getElementById: node, querySelectorAll: () => ['home', 'play', 'clear'].map(node) },
-  window: { scrollTo() {}, addEventListener() {} }, navigator: {},
+  window: { scrollTo() {}, addEventListener() {} }, navigator: {}, location: { search: '' }, URLSearchParams,
   localStorage: { getItem: k => saved.get(k), setItem: (k, v) => saved.set(k, String(v)) },
   Image: class { set src(value) { images.push(value); } },
   ResizeObserver: class { observe() {} },

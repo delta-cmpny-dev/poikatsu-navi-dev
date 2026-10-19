@@ -419,6 +419,13 @@
   $('back').onclick = home;
   $('again').onclick = () => start(STAGES.indexOf(stage));
   $('next').onclick = () => start(STAGES.indexOf(stage) + 1);
+  // ?only=safari,passbook のように指定すると、そのステージだけを出す(ステージ単位で共有するとき用)
+  const only = new URLSearchParams(location.search).get('only');
+  if (only) {
+    const ids = only.split(',');
+    const picked = STAGES.filter(s => ids.includes(s.id));
+    if (picked.length) STAGES.splice(0, STAGES.length, ...picked);
+  }
   home();
 </script>
 </body>
