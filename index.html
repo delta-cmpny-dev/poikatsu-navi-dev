@@ -118,6 +118,10 @@
   /* 重要ポイントの表示 */
   #modal { position: fixed; inset: 0; background: rgba(8, 14, 34, .75); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 10; }
   #modal.on { display: flex; }
+  #modal.at-bottom { align-items: flex-end; } #modal.at-top { align-items: flex-start; }
+  #modal.marked { background: transparent; } /* 暗くするのは赤枠の外側だけ(赤枠の中の画面は見えるように) */
+  /* 重要ポイントが指している場所(ポップアップの後ろの画面の上に、赤い枠で出す) */
+  #warnMark { position: absolute; display: none; outline: 4px solid #ff3b3b; outline-offset: 3px; border-radius: 8px; z-index: 9; pointer-events: none; box-shadow: 0 0 0 9999px rgba(8, 14, 34, .55); animation: pulse 1s ease-in-out infinite; }
   #modal div { background: #fff; color: var(--ink); border-radius: 20px; padding: 24px 20px; max-width: 420px; max-height: calc(100dvh - 48px); overflow-y: auto; width: 100%; text-align: center; animation: pop .3s cubic-bezier(.2, 1.4, .4, 1); }
   @keyframes pop { from { transform: scale(.7); opacity: 0 } }
   #modal em { display: block; font-style: normal; font-weight: 900; color: var(--warn); font-size: 18px; margin-bottom: 10px; }
@@ -152,6 +156,7 @@
     <div id="scene" hidden aria-hidden="true"></div>
     <div id="target"></div>
     <div id="marks"></div>
+    <div id="warnMark"></div>
     <div id="swipe">👆</div>
     <div id="toast"></div>
     <div id="card"></div>
@@ -322,7 +327,7 @@
     const version = playVersion;
     const later = (fn, ms) => setTimeout(() => { if (version === playVersion) fn(); }, ms);
     toast.classList.remove('on');
-    const go = () => s.warn ? ($('modalText').textContent = s.warn, $('modal').classList.add('on')) : advance();
+    const go = () => s.warn ? openModal(s.warn, s.warnMark) : advance();
     if (s.type === 'tap') {
       target.className = 'hit';
       later(() => { if (s.after) { img.src = src(s.after); target.className = ''; } }, 350);
@@ -385,7 +390,7 @@
     if (inside(s.rect) || (s.alts || []).some(inside)) return correct(); // alts: ほかにも正解の場所がある
     const trap = (s.traps || []).find(t => inside(t.rect));
     // alert付きの間違いは、トーストではなく重要ポイントとして大きく見せる(進まない)
-    if (trap?.alert) { alerting = true; $('modalText').textContent = trap.alert; $('modal').classList.add('on'); return; }
+    if (trap?.alert) { alerting = true; openModal(trap.alert, trap.mark || trap.rect); return; }
     miss(trap ? trap.msg : 'そこじゃないよ', px, py);
   });
   shot.addEventListener('wheel', e => { if (!busy && stage.steps[si].type === 'scroll') scrollBy(e.deltaY); });
@@ -403,7 +408,21 @@
   });
 
   $('stages').addEventListener('click', e => { const b = e.target.closest('.stage'); if (b) start(Number(b.dataset.i)); });
-  $('modalOk').onclick = () => { if (alerting) { alerting = false; $('modal').classList.remove('on'); } else advance(); };
+  $('modalOk').onclick = () => { closeMark(); if (alerting) { alerting = false; $('modal').classList.remove('on'); } else advance(); };
+  // 重要ポイントを出すとき、どこの話かを画面上の赤枠で示す。枠が隠れないよう、ポップアップは反対側に寄せる
+  function openModal(text, mark) {
+    $('modalText').textContent = text;
+    const m = $('modal');
+    m.classList.remove('at-top', 'at-bottom', 'marked');
+    closeMark();
+    if (mark) {
+      const [x, y, w, h] = mark;
+      $('warnMark').style.cssText = `display:block;left:${x / 5.9}%;top:${y / 12.8}%;width:${w / 5.9}%;height:${h / 12.8}%`;
+      m.classList.add(y + h / 2 < 640 ? 'at-bottom' : 'at-top', 'marked');
+    }
+    m.classList.add('on');
+  }
+  function closeMark() { $('warnMark').style.display = 'none'; }
   // 手順動画: 注釈入りの動画をアプリ内で再生する
   function openVideo(name) {
     const v = $('video');
