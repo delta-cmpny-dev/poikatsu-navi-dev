@@ -181,7 +181,7 @@ const STAGES = [
         review: 'ポイントサイトはアプリでは絶対開かない！ Safariから開く癖をつけよう。' },
       { type: 'tap', img: 'hapitas-top', text: 'マイページを開こう', rect: [100, 1058, 92, 84] },
       { type: 'tap', img: 'hapitas-menu', text: 'ポイント通帳を開こう', rect: [12, 418, 475, 70] },
-      { type: 'info', img: 'hapitas-valid', card: 'bottom', next: '理解した', marks: [[24, 354, 118, 58]],
+      { type: 'info', img: 'hapitas-pending', card: 'bottom', next: '理解した', marks: [[24, 354, 139, 59]],
         text: '判定中：申し込みを実施した直後のステータスです。ポイント獲得条件（FX案件の場合は規定のFX取引）を達成後に有効になります。',
         review: '判定中：申し込みを実施した直後のステータス。ポイント獲得条件（FX案件の場合は規定のFX取引）を達成後に有効になる。' },
       { type: 'info', img: 'hapitas-valid', card: 'bottom', next: '理解した', marks: [[160, 352, 140, 62]],
