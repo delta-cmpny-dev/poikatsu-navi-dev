@@ -119,6 +119,11 @@
   #modal { position: fixed; inset: 0; background: rgba(8, 14, 34, .75); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 10; }
   #modal.on { display: flex; }
   #modal.at-bottom { align-items: flex-end; } #modal.at-top { align-items: flex-start; }
+  /* 赤枠の中に、ダメであることを示す×を点滅させる */
+  #warnMark::before, #warnMark::after { content: ""; position: absolute; left: 50%; top: 50%; width: 6px; height: min(150%, 90px); margin: 0 -3px; background: #ff3b3b; border-radius: 3px; box-shadow: 0 0 6px rgba(0, 0, 0, .5); animation: ngBlink .8s steps(1) infinite; }
+  #warnMark::before { transform: translate(0, -50%) rotate(45deg); }
+  #warnMark::after { transform: translate(0, -50%) rotate(-45deg); }
+  @keyframes ngBlink { 50% { opacity: 0; } }
   #modal.marked { background: transparent; } /* 暗くするのは赤枠の外側だけ(赤枠の中の画面は見えるように) */
   /* 重要ポイントが指している場所(ポップアップの後ろの画面の上に、赤い枠で出す) */
   #warnMark { position: absolute; display: none; outline: 4px solid #ff3b3b; outline-offset: 3px; border-radius: 8px; z-index: 9; pointer-events: none; box-shadow: 0 0 0 9999px rgba(8, 14, 34, .55); animation: pulse 1s ease-in-out infinite; }
