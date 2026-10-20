@@ -124,9 +124,9 @@
   #warnMark::before { transform: translate(0, -50%) rotate(45deg); }
   #warnMark::after { transform: translate(0, -50%) rotate(-45deg); }
   @keyframes ngBlink { 50% { opacity: 0; } }
-  #modal.marked { background: transparent; } /* 暗くするのは赤枠の外側だけ(赤枠の中の画面は見えるように) */
+  #modal.marked { background: transparent; padding-top: 0; padding-bottom: 0; } /* 暗くするのは赤枠の外側だけ(赤枠の中の画面は見えるように) */
   /* 重要ポイントが指している場所(ポップアップの後ろの画面の上に、赤い枠で出す) */
-  #warnMark { position: absolute; display: none; outline: 4px solid #ff3b3b; outline-offset: 3px; border-radius: 8px; z-index: 9; pointer-events: none; box-shadow: 0 0 0 9999px rgba(8, 14, 34, .55); animation: pulse 1s ease-in-out infinite; }
+  #warnMark { position: absolute; display: none; outline: 4px solid #ff3b3b; outline-offset: 3px; border-radius: 8px; z-index: 9; pointer-events: none; box-shadow: 0 0 0 9999px rgba(8, 14, 34, .55); }
   #modal div { background: #fff; color: var(--ink); border-radius: 20px; padding: 24px 20px; max-width: 420px; max-height: calc(100dvh - 48px); overflow-y: auto; width: 100%; text-align: center; animation: pop .3s cubic-bezier(.2, 1.4, .4, 1); }
   @keyframes pop { from { transform: scale(.7); opacity: 0 } }
   #modal em { display: block; font-style: normal; font-weight: 900; color: var(--warn); font-size: 18px; margin-bottom: 10px; }
@@ -426,8 +426,24 @@
       m.classList.add(y + h / 2 < 640 ? 'at-bottom' : 'at-top', 'marked');
     }
     m.classList.add('on');
+    if (mark) placeModal();
   }
-  function closeMark() { $('warnMark').style.display = 'none'; }
+  function placeModal() {
+    const m = $('modal'), box = m.firstElementChild;
+    if (!box) return;
+    const r = $('warnMark').getBoundingClientRect();
+    const gap = 14, above = r.top - gap * 2, below = innerHeight - r.bottom - gap * 2;
+    m.style.alignItems = 'flex-start';
+    box.style.maxHeight = Math.max(above, below) + 'px';
+    const h = box.getBoundingClientRect().height;
+    box.style.marginTop = (below >= above || below >= h ? r.bottom + gap : Math.max(gap, r.top - gap - h)) + 'px';
+  }
+  function closeMark() {
+    $('warnMark').style.display = 'none';
+    const m = $('modal'), box = m.firstElementChild;
+    m.style.alignItems = '';
+    if (box) { box.style.marginTop = ''; box.style.maxHeight = ''; }
+  }
   // 手順動画: 注釈入りの動画をアプリ内で再生する
   function openVideo(name) {
     const v = $('video');
