@@ -104,6 +104,8 @@
   #card .btns button { background: var(--ink); color: #fff; font-weight: 700; font-size: 16px; padding: 14px; border-radius: 12px; }
   #card .btns button.ng { background: #b3bbcc; }
   #card.compact { padding: 10px 14px; }
+  #card .banner { margin: -2px 0 8px; padding: 8px 12px; border-radius: 10px; background: var(--accent); color: #fff; font-weight: 900; font-size: 20px; line-height: 1.3; text-align: center; }
+  #card .banner.buy { background: #e5263a; } #card .banner.sell { background: #1f6fe0; }
   #card.compact b { font-size: 15px; line-height: 1.45; }
   #card.compact p { font-size: 13px; margin-top: 4px; }
   #card.compact .btns { margin-top: 8px; gap: 8px; }
@@ -267,7 +269,9 @@
     if (s.cardAt != null) card.classList.remove('top', 'bottom', 'mid');
     // label: ステップごとに見出しを変えたいとき(例: 手順とは関係ない豆知識)
     const label = s.label || { tap: 'タップしよう', scroll: 'スクロールしよう', quiz: 'クイズ', info: 'ポイント' }[s.type];
-    let html = `<small>${no} / ${total}　${label}</small><b>${s.text}</b>` + (s.sub ? `<p>${s.sub}</p>` : '');
+    // banner: 作業のまとまりを大きく示す帯(例: Lot数の変更、買い/売りの段階)
+    const banner = s.banner ? `<div class="banner ${s.banner.tone || ''}">${s.banner.text}</div>` : '';
+    let html = banner + `<small>${no} / ${total}　${label}</small><b>${s.text}</b>` + (s.sub ? `<p>${s.sub}</p>` : '');
     if (s.type === 'quiz') html += `<div class="btns">${s.choices.map((c, i) => `<button data-c="${i}">${c.label}</button>`).join('')}</div>`;
     if (s.type === 'info') html += `<div class="btns">${s.video ? '<button class="video-btn" data-video>▶ 手順動画を見る</button>' : ''}<button data-next>${s.next || '次へ'}</button></div>`;
     card.innerHTML = html;
